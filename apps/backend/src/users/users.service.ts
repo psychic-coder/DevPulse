@@ -1,0 +1,79 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { User } from './entities/user.entity';
+
+export interface UpsertUserInput {
+  githubId: string;
+  githubUsername: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  email?: string | null;
+  githubToken: string;
+  refreshToken?: string | null;
+  locale?: string;
+}
+
+@Injectable()
+export class UsersService {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  async upsertUser(input: UpsertUserInput): Promise<User> {
+    const existingUser = await this.userRepository.findOne({
+      where: { githubId: input.githubId },
+    });
+
+    if (existingUser) {
+      Object.assign(existingUser, {
+        githubUsername: input.githubUsername,
+        displayName: input.displayName ?? existingUser.displayName,
+        avatarUrl: input.avatarUrl ?? existingUser.avatarUrl,
+        email: input.email ?? existingUser.email,
+        githubToken: input.githubToken,
+        refreshToken: input.refreshToken ?? existingUser.refreshToken,
+        locale: input.locale ?? existingUser.locale,
+      });
+
+      return this.userRepository.save(existingUser);
+    }
+
+    const user = this.userRepository.create({
+      githubId: input.githubId,
+      githubUsername: input.githubUsername,
+      displayName: input.displayName ?? null,
+      avatarUrl: input.avatarUrl ?? null,
+      email: input.email ?? null,
+      githubToken: input.githubToken,
+      refreshToken: input.refreshToken ?? null,
+      locale: input.locale ?? 'en',
+    });
+
+    return this.userRepository.save(user);
+  }
+
+  findById(id: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  findByGithubId(githubId: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { githubId } });
+  }
+
+  async updateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<User | null> {
+    const user = await this.findById(userId);
+
+    if (!user) {
+      return null;
+    }
+
+    user.refreshToken = refreshToken;
+
+    return this.userRepository.save(user);
+  }
+}
