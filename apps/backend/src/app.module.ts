@@ -10,6 +10,8 @@ import { envValidationSchema } from './config/env.validation';
 import { JwtAuthGuard } from './common/guards/jwt.guard';
 import { createTypeOrmOptions } from './database/typeorm.config';
 import { UsersModule } from './users/users.module';
+import { PostsModule } from './posts/posts.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { UsersModule } from './users/users.module';
     TypeOrmModule.forRoot(createTypeOrmOptions()),
     UsersModule,
     AuthModule,
+    PostsModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [
