@@ -19,6 +19,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async validate(payload: { sub: string; githubUsername: string }) {
     return payload;
   }

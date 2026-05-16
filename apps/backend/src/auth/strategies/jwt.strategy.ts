@@ -13,6 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async validate(payload: { sub: string; githubUsername: string }) {
     return payload;
   }

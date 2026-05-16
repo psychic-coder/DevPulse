@@ -12,6 +12,7 @@ import { createTypeOrmOptions } from './database/typeorm.config';
 import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
+import { GithubSyncModule } from './github-sync/github-sync.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CommentsModule } from './comments/comments.module';
     AuthModule,
     PostsModule,
     CommentsModule,
+    GithubSyncModule,
   ],
   controllers: [AppController],
   providers: [

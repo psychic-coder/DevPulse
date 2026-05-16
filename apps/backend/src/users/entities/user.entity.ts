@@ -2,9 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Repository } from '../../github-sync/entities/repository.entity';
+import { Commit } from '../../github-sync/entities/commit.entity';
+import { PullRequest } from '../../github-sync/entities/pull-request.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -40,4 +44,13 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => Repository, (repo) => repo.user)
+  repositories: Repository[];
+
+  @OneToMany(() => Commit, (commit) => commit.user)
+  commits: Commit[];
+
+  @OneToMany(() => PullRequest, (pr) => pr.user)
+  pullRequests: PullRequest[];
 }
