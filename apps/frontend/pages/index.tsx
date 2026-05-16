@@ -1,7 +1,10 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Navbar } from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
 
 type Post = { id: string; title: string; content: string };
 
@@ -82,10 +85,11 @@ function EmptyState() {
 export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
+  const { fetchWithAuth } = useAuth();
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:3000/posts")
+    fetchWithAuth("http://localhost:3000/posts")
       .then((r) => r.json())
       .then((data) => setPosts(Array.isArray(data) ? data : []))
       .catch(() => setPosts([]))

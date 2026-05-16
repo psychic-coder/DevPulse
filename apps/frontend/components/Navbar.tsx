@@ -1,16 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
-import { motion } from "framer-motion";
 
 export function Navbar() {
   const { user, login, logout } = useAuth();
 
   return (
-    <motion.nav
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="sticky top-0 z-50"
+    <div className="sticky top-0 z-50"
       style={{
         background: "rgba(8, 12, 18, 0.75)",
         backdropFilter: "blur(20px) saturate(180%)",
@@ -28,65 +25,78 @@ export function Navbar() {
       />
 
       <div className="max-w-5xl mx-auto px-6 py-3 flex justify-between items-center">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          {/* glowing orb icon */}
-          <div className="relative w-8 h-8 flex items-center justify-center">
-            <div
-              className="absolute inset-0 rounded-lg opacity-70"
+        <div className="flex items-center gap-6">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-3 group">
+            {/* glowing orb icon */}
+            <div className="relative w-8 h-8 flex items-center justify-center">
+              <div
+                className="absolute inset-0 rounded-lg opacity-70"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3))",
+                  border: "1px solid rgba(99,179,237,0.25)",
+                }}
+              />
+              <div
+                className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                style={{
+                  boxShadow: "0 0 20px rgba(59,130,246,0.4)",
+                }}
+              />
+              <svg
+                className="relative z-10 w-4 h-4"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z"
+                  stroke="url(#logoGrad)"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M8 2V14M2 5.5L14 10.5M14 5.5L2 10.5"
+                  stroke="url(#logoGrad)"
+                  strokeWidth="0.75"
+                  strokeOpacity="0.5"
+                />
+                <defs>
+                  <linearGradient id="logoGrad" x1="2" y1="2" x2="14" y2="14">
+                    <stop stopColor="#3b82f6" />
+                    <stop offset="1" stopColor="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            <span
+              className="text-xl font-bold tracking-tight"
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(59,130,246,0.3), rgba(139,92,246,0.3))",
-                border: "1px solid rgba(99,179,237,0.25)",
+                  "linear-gradient(135deg, #93c5fd 0%, #c4b5fd 60%, #818cf8 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                letterSpacing: "-0.02em",
               }}
-            />
-            <div
-              className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{
-                boxShadow: "0 0 20px rgba(59,130,246,0.4)",
-              }}
-            />
-            <svg
-              className="relative z-10 w-4 h-4"
-              viewBox="0 0 16 16"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z"
-                stroke="url(#logoGrad)"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M8 2V14M2 5.5L14 10.5M14 5.5L2 10.5"
-                stroke="url(#logoGrad)"
-                strokeWidth="0.75"
-                strokeOpacity="0.5"
-              />
-              <defs>
-                <linearGradient id="logoGrad" x1="2" y1="2" x2="14" y2="14">
-                  <stop stopColor="#3b82f6" />
-                  <stop offset="1" stopColor="#8b5cf6" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
+              DevPulse
+            </span>
+          </Link>
 
-          <span
-            className="text-xl font-bold tracking-tight"
-            style={{
-              background:
-                "linear-gradient(135deg, #93c5fd 0%, #c4b5fd 60%, #818cf8 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            DevPulse
-          </span>
-        </Link>
+          {/* New post link for authenticated users */}
+          {user && (
+            <Link
+              href="/posts/new"
+              className="text-sm font-medium"
+              style={{ color: "#93c5fd" }}
+            >
+              New Post
+            </Link>
+          )}
+        </div>
 
         {/* Nav actions */}
         <div className="flex items-center gap-3">
@@ -156,6 +166,6 @@ export function Navbar() {
           )}
         </div>
       </div>
-    </motion.nav>
+    </div>
   );
 }

@@ -1,8 +1,11 @@
+"use client";
+
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "../../components/Navbar";
+import { useAuth } from "../../context/AuthContext";
 
 type Post = { id: string; title: string; content: string };
 type Comment = { id: string; content: string };
@@ -47,13 +50,16 @@ export default function PostDetail() {
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
+  const { token, login, fetchWithAuth } = useAuth();
+  const [commentText, setCommentText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     Promise.all([
-      fetch(`http://localhost:3000/posts/${id}`).then((r) => r.json()),
-      fetch(`http://localhost:3000/posts/${id}/comments`).then((r) => r.json()),
+      fetchWithAuth(`http://localhost:3000/posts/${id}`).then((r) => r.json()),
+      fetchWithAuth(`http://localhost:3000/posts/${id}/comments`).then((r) => r.json()),
     ])
       .then(([p, c]) => {
         setPost(p);
@@ -194,18 +200,48 @@ export default function PostDetail() {
 
             <div className="p-8 md:p-10">
               {/* meta row */}
-              <div className="flex items-center gap-3 mb-6">
-                <span
-                  className="text-xs font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md"
-                  style={{
-                    background: "rgba(59,130,246,0.1)",
-                    border: "1px solid rgba(59,130,246,0.2)",
-                    color: "#93c5fd",
-                    fontFamily: "'JetBrains Mono', monospace",
-                  }}
-                >
-                  #{id}
-                </span>
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <div>
+                  <span
+                    className="text-xs font-semibold uppercase tracking-widest px-2.5 py-1 rounded-md"
+                    style={{
+                      background: "rgba(59,130,246,0.1)",
+                      border: "1px solid rgba(59,130,246,0.2)",
+                      color: "#93c5fd",
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}
+                  >
+                    #{id}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {token ? (
+                    <>
+                      <Link href={`/posts/${id}/edit`} className="text-sm btn-ghost">
+                        Edit
+                      </Link>
+                      <button
+                        className="text-sm btn-ghost text-red-400"
+                        onClick={async () => {
+                          if (!confirm("Delete this post?")) return;
+                          try {
+                            const res = await fetchWithAuth(`http://localhost:3000/posts/${id}`, {
+                              method: "DELETE",
+                            });
+                            if (!res.ok) throw new Error("Delete failed");
+                            router.push("/");
+                          } catch (err) {
+                            console.error(err);
+                            alert("Could not delete post");
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  ) : null}
+                </div>
               </div>
 
               <h1
@@ -287,6 +323,70 @@ export default function PostDetail() {
             </div>
 
             <div className="p-8">
+              {/* comment form */}
+              <div className="mb-6">
+                {token ? (
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      if (!commentText.trim()) return;
+                      setSubmitting(true);
+                      try {
+                        const res = await fetchWithAuth(
+                          `http://localhost:3000/posts/${id}/comments`,
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ content: commentText.trim() }),
+                          },
+                        );
+                        if (!res.ok) throw new Error("Failed to post comment");
+                        const created = await res.json();
+                        setComments((s) => [created, ...s]);
+                        setCommentText("");
+                      } catch (err) {
+                        console.error(err);
+                        alert("Could not post comment");
+                      } finally {
+                        setSubmitting(false);
+                      }
+                    }}
+                  >
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      rows={3}
+                      className="w-full p-3 rounded-md border border-gray-200 mb-2"
+                      placeholder="Write a comment..."
+                      aria-label="Comment content"
+                      required
+                    />
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setCommentText("")}
+                        className="btn-secondary"
+                        disabled={submitting}
+                        aria-label="Cancel comment"
+                      >
+                        Cancel
+                      </button>
+                      <button type="submit" className="btn-primary" disabled={submitting || !commentText.trim()} aria-label="Post comment">
+                        {submitting ? "Posting..." : "Post Comment"}
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm text-gray-600">You must be logged in to comment.</p>
+                    <button onClick={() => login()} className="btn-primary">
+                      Login
+                    </button>
+                  </div>
+                )}
+              </div>
               {comments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-4">
                   <div
@@ -315,54 +415,77 @@ export default function PostDetail() {
                     No comments yet — be the first
                   </p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <AnimatePresence>
-                    {comments.map((c, i) => (
-                      <motion.div
-                        key={c.id}
-                        initial={{ opacity: 0, x: -16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.06, duration: 0.3 }}
-                        className="relative flex gap-4 rounded-xl p-4 group"
-                        style={{
-                          background: "var(--bg-raised)",
-                          border: "1px solid rgba(99,179,237,0.06)",
-                        }}
-                      >
-                        {/* left accent line */}
-                        <div
-                          className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-200"
+                ) : (
+                  <div className="space-y-3">
+                    <AnimatePresence>
+                      {comments.map((c, i) => (
+                        <motion.div
+                          key={c.id}
+                          initial={{ opacity: 0, x: -16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.06, duration: 0.3 }}
+                          className="relative flex gap-4 rounded-xl p-4 group"
                           style={{
-                            background:
-                              "linear-gradient(180deg, #3b82f6, #8b5cf6)",
-                            left: "0",
-                            borderRadius: "0 2px 2px 0",
+                            background: "var(--bg-raised)",
+                            border: "1px solid rgba(99,179,237,0.06)",
                           }}
-                        />
-                        <div className="pl-3">
-                          {/* comment index */}
-                          <span
-                            className="text-xs font-semibold mb-1.5 block"
+                        >
+                          {/* left accent line */}
+                          <div
+                            className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-200"
                             style={{
-                              color: "var(--text-dim)",
-                              fontFamily: "'JetBrains Mono', monospace",
+                              background:
+                                "linear-gradient(180deg, #3b82f6, #8b5cf6)",
+                              left: "0",
+                              borderRadius: "0 2px 2px 0",
                             }}
-                          >
-                            #{String(i + 1).padStart(2, "0")}
-                          </span>
-                          <p
-                            className="text-sm leading-relaxed"
-                            style={{ color: "var(--text-secondary)" }}
-                          >
-                            {c.content}
-                          </p>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              )}
+                          />
+                          <div className="pl-3 flex-1">
+                            {/* comment index */}
+                            <span
+                              className="text-xs font-semibold mb-1.5 block"
+                              style={{
+                                color: "var(--text-dim)",
+                                fontFamily: "'JetBrains Mono', monospace",
+                              }}
+                            >
+                              #{String(i + 1).padStart(2, "0")}
+                            </span>
+                            <p
+                              className="text-sm leading-relaxed"
+                              style={{ color: "var(--text-secondary)" }}
+                            >
+                              {c.content}
+                            </p>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            {token && (
+                              <button
+                                onClick={async () => {
+                                  if (!confirm("Delete this comment?")) return;
+                                  try {
+                                    const res = await fetchWithAuth(
+                                      `http://localhost:3000/comments/${c.id}`,
+                                      { method: "DELETE" },
+                                    );
+                                    if (!res.ok) throw new Error("Delete failed");
+                                    setComments((s) => s.filter((x) => x.id !== c.id));
+                                  } catch (err) {
+                                    console.error(err);
+                                    alert("Could not delete comment");
+                                  }
+                                }}
+                                className="text-sm text-red-500 hover:text-red-600"
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
             </div>
           </motion.section>
         </div>
