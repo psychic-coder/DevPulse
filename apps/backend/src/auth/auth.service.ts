@@ -33,10 +33,6 @@ export class AuthService {
     const profile = await this.githubService.getUser(
       tokenResponse.access_token,
     );
-    const refreshToken = await this.issueRefreshToken(
-      profile.id.toString(),
-      profile.login,
-    );
 
     const user = await this.usersService.upsertUser({
       githubId: profile.id.toString(),
@@ -45,8 +41,16 @@ export class AuthService {
       avatarUrl: profile.avatar_url,
       email: profile.email,
       githubToken: encryptToken(tokenResponse.access_token),
-      refreshToken,
+      refreshToken: '', // placeholder; will be updated after user creation
     });
+
+    const refreshToken = await this.issueRefreshToken(
+      user.id,
+      user.githubUsername,
+    );
+
+    // Update user with the correct refresh token
+    await this.usersService.updateRefreshToken(user.id, refreshToken);
 
     return {
       accessToken: await this.issueAccessToken(user.id, user.githubUsername),
