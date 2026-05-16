@@ -146,12 +146,8 @@ export default function PostDetail() {
 
         <div className="relative z-10 max-w-3xl mx-auto px-6 py-14">
           {/* Back link */}
-          <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mb-10"
-          >
+          <motion.div initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
+            <div className="mb-10">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm font-medium group transition-colors duration-200"
@@ -174,21 +170,24 @@ export default function PostDetail() {
                 Back to posts
               </span>
             </Link>
+            </div>
           </motion.div>
 
           {/* Post article */}
-          <motion.article
+          <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="mb-10 rounded-2xl overflow-hidden relative"
-            style={{
-              background: "var(--bg-surface)",
-              border: "1px solid rgba(99,179,237,0.1)",
-              boxShadow:
-                "0 0 60px rgba(59,130,246,0.06), 0 0 0 1px rgba(99,179,237,0.04)",
-            }}
           >
+            <article
+              className="mb-10 rounded-2xl overflow-hidden relative"
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid rgba(99,179,237,0.1)",
+                boxShadow:
+                  "0 0 60px rgba(59,130,246,0.06), 0 0 0 1px rgba(99,179,237,0.04)",
+              }}
+            >
             {/* top stripe */}
             <div
               className="h-px w-full"
@@ -262,10 +261,11 @@ export default function PostDetail() {
                 {post.content}
               </div>
             </div>
-          </motion.article>
+            </article>
+          </motion.div>
 
           {/* Comments section */}
-          <motion.section
+          <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -273,12 +273,14 @@ export default function PostDetail() {
               delay: 0.15,
               ease: [0.25, 0.46, 0.45, 0.94],
             }}
-            className="rounded-2xl overflow-hidden"
-            style={{
-              background: "var(--bg-surface)",
-              border: "1px solid rgba(99,179,237,0.08)",
-            }}
           >
+            <section
+              className="rounded-2xl overflow-hidden"
+              style={{
+                background: "var(--bg-surface)",
+                border: "1px solid rgba(99,179,237,0.08)",
+              }}
+            >
             {/* header */}
             <div
               className="px-8 py-5 flex items-center justify-between"
@@ -418,18 +420,20 @@ export default function PostDetail() {
                 ) : (
                   <div className="space-y-3">
                     <AnimatePresence>
-                      {comments.map((c, i) => (
-                        <motion.div
-                          key={c.id}
-                          initial={{ opacity: 0, x: -16 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.06, duration: 0.3 }}
-                          className="relative flex gap-4 rounded-xl p-4 group"
-                          style={{
-                            background: "var(--bg-raised)",
-                            border: "1px solid rgba(99,179,237,0.06)",
-                          }}
-                        >
+                              {comments.map((c, i) => (
+                                <motion.div
+                                  key={c.id}
+                                  initial={{ opacity: 0, x: -16 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: i * 0.06, duration: 0.3 }}
+                                >
+                                  <div
+                                    className="relative flex gap-4 rounded-xl p-4 group"
+                                    style={{
+                                      background: "var(--bg-raised)",
+                                      border: "1px solid rgba(99,179,237,0.06)",
+                                    }}
+                                  >
                           {/* left accent line */}
                           <div
                             className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-200"
@@ -481,13 +485,15 @@ export default function PostDetail() {
                               </button>
                             )}
                           </div>
+                          </div>
                         </motion.div>
                       ))}
                     </AnimatePresence>
                   </div>
                 )}
             </div>
-          </motion.section>
+            </section>
+          </motion.div>
         </div>
       </main>
     </>

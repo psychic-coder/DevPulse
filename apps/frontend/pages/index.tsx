@@ -39,15 +39,14 @@ function Loader() {
 
 function EmptyState() {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-24 gap-5 rounded-2xl"
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid rgba(99,179,237,0.08)",
-      }}
-    >
+    <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
+      <div
+        className="flex flex-col items-center justify-center py-24 gap-5 rounded-2xl"
+        style={{
+          background: "var(--bg-surface)",
+          border: "1px solid rgba(99,179,237,0.08)",
+        }}
+      >
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center"
         style={{
@@ -77,6 +76,7 @@ function EmptyState() {
         <p className="text-sm" style={{ color: "var(--text-dim)" }}>
           Be the first to share something
         </p>
+      </div>
       </div>
     </motion.div>
   );
@@ -121,8 +121,8 @@ export default function Home() {
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="mb-16"
           >
+            <div className="mb-16">
             {/* eyebrow */}
             <div className="flex items-center gap-3 mb-5">
               <div
@@ -164,6 +164,7 @@ export default function Home() {
               A space for developers to share ideas, spark conversations, and
               build in public.
             </p>
+            </div>
           </motion.div>
 
           {/* Posts feed */}
@@ -175,7 +176,7 @@ export default function Home() {
             {!loading && posts.length > 0 && (
               <div className="grid gap-4">
                 {posts.map((p, i) => (
-                  <motion.article
+                  <motion.div
                     key={p.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -185,12 +186,14 @@ export default function Home() {
                       duration: 0.4,
                       ease: [0.25, 0.46, 0.45, 0.94],
                     }}
-                    className="group relative rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer"
-                    style={{
-                      background: "var(--bg-surface)",
-                      border: "1px solid rgba(99,179,237,0.08)",
-                    }}
                   >
+                    <article
+                      className="group relative rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer"
+                      style={{
+                        background: "var(--bg-surface)",
+                        border: "1px solid rgba(99,179,237,0.08)",
+                      }}
+                    >
                     {/* hover glow */}
                     <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
@@ -300,7 +303,8 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                  </motion.article>
+                    </article>
+                  </motion.div>
                 ))}
               </div>
             )}
