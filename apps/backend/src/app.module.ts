@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { GithubSyncModule } from './github-sync/github-sync.module';
+import { CacheModule } from './common/cache/cache.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GithubSyncModule } from './github-sync/github-sync.module';
       validationSchema: envValidationSchema,
     }),
     TypeOrmModule.forRoot(createTypeOrmOptions()),
+    CacheModule,
     UsersModule,
     AuthModule,
     PostsModule,

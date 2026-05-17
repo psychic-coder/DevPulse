@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { CacheService } from '../common/cache/cache.service';
 
 export interface GithubTokenResponse {
   access_token: string;
@@ -28,6 +29,8 @@ export interface GithubRateLimit {
 export class GithubService {
   private readonly logger = new Logger(GithubService.name);
   private readonly GITHUB_API_BASE = 'https://api.github.com';
+
+  constructor(private cacheService: CacheService) {}
 
   async exchangeCodeForToken(code: string): Promise<GithubTokenResponse> {
     const response = await fetch(
@@ -76,6 +79,13 @@ export class GithubService {
    * Get GitHub API rate limit information
    */
   async getRateLimit(token: string): Promise<GithubRateLimit> {
+    // Check cache first
+    const cached = await this.cacheService.getRateLimit(token);
+    if (cached) {
+      this.logger.debug('Rate limit from cache');
+      return cached;
+    }
+
     const response = await fetch(`${this.GITHUB_API_BASE}/rate_limit`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -91,12 +101,17 @@ export class GithubService {
     const data = await response.json();
     const coreLimit = data.resources.core;
 
-    return {
+    const rateLimit = {
       limit: coreLimit.limit,
       remaining: coreLimit.remaining,
       reset: coreLimit.reset,
       resetAt: coreLimit.reset,
     };
+
+    // Cache the rate limit for 1 minute
+    await this.cacheService.setRateLimit(token, rateLimit);
+
+    return rateLimit;
   }
 
   /**
@@ -107,6 +122,17 @@ export class GithubService {
     page: number = 1,
     perPage: number = 100,
   ): Promise<any[]> {
+    // Only cache first page
+    if (page === 1) {
+      const cached = await this.cacheService.get<any[]>(
+        `gh:repos:full:${this.hashToken(token)}`,
+      );
+      if (cached) {
+        this.logger.debug('Repositories from cache');
+        return cached;
+      }
+    }
+
     const response = await fetch(
       `${this.GITHUB_API_BASE}/user/repos?page=${page}&per_page=${perPage}&sort=updated&direction=desc`,
       {
@@ -125,7 +151,18 @@ export class GithubService {
       throw new Error('Failed to fetch GitHub repositories');
     }
 
-    return (await response.json()) as any[];
+    const repos = (await response.json()) as any[];
+
+    // Cache first page
+    if (page === 1) {
+      await this.cacheService.set(
+        `gh:repos:full:${this.hashToken(token)}`,
+        repos,
+        3600,
+      );
+    }
+
+    return repos;
   }
 
   /**
@@ -138,6 +175,18 @@ export class GithubService {
     page: number = 1,
     perPage: number = 100,
   ): Promise<any[]> {
+    // Check cache for first page only
+    if (page === 1) {
+      const cached = await this.cacheService.getCommits(
+        this.hashToken(token),
+        repoFullName,
+      );
+      if (cached) {
+        this.logger.debug(`Commits from cache for ${repoFullName}`);
+        return cached;
+      }
+    }
+
     const response = await fetch(
       `${this.GITHUB_API_BASE}/repos/${repoFullName}/commits?since=${since}&page=${page}&per_page=${perPage}`,
       {
@@ -156,7 +205,18 @@ export class GithubService {
       throw new Error(`Failed to fetch commits for ${repoFullName}`);
     }
 
-    return (await response.json()) as any[];
+    const commits = (await response.json()) as any[];
+
+    // Cache first page
+    if (page === 1) {
+      await this.cacheService.setCommits(
+        this.hashToken(token),
+        repoFullName,
+        commits,
+      );
+    }
+
+    return commits;
   }
 
   /**
@@ -169,6 +229,17 @@ export class GithubService {
     page: number = 1,
     perPage: number = 100,
   ): Promise<any[]> {
+    // Check cache for first page only
+    if (page === 1) {
+      const cached = await this.cacheService.get<any[]>(
+        `gh:prs:${this.hashToken(token)}:${repoFullName}:${state}`,
+      );
+      if (cached) {
+        this.logger.debug(`PRs from cache for ${repoFullName}`);
+        return cached;
+      }
+    }
+
     const response = await fetch(
       `${this.GITHUB_API_BASE}/repos/${repoFullName}/pulls?state=${state}&page=${page}&per_page=${perPage}&sort=updated&direction=desc`,
       {
@@ -187,6 +258,24 @@ export class GithubService {
       throw new Error(`Failed to fetch PRs for ${repoFullName}`);
     }
 
-    return (await response.json()) as any[];
+    const prs = (await response.json()) as any[];
+
+    // Cache first page
+    if (page === 1) {
+      await this.cacheService.set(
+        `gh:prs:${this.hashToken(token)}:${repoFullName}:${state}`,
+        prs,
+        1800,
+      );
+    }
+
+    return prs;
+  }
+
+  /**
+   * Hash token for safer cache key
+   */
+  private hashToken(token: string): string {
+    return token.substring(token.length - 12);
   }
 }
