@@ -14,6 +14,21 @@ export interface UpsertUserInput {
   locale?: string;
 }
 
+export interface UserWithStats {
+  id: string;
+  githubId: string;
+  githubUsername: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  email: string | null;
+  locale: string;
+  createdAt: Date;
+  updatedAt: Date;
+  repositories: number;
+  commits: number;
+  pullRequests: number;
+}
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -57,6 +72,33 @@ export class UsersService {
   findById(id: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { id } });
   }
+
+  async findByIdWithStats(id: string): Promise<UserWithStats | null> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['repositories', 'commits', 'pullRequests'],
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      githubId: user.githubId,
+      githubUsername: user.githubUsername,
+      displayName: user.displayName,
+      avatarUrl: user.avatarUrl,
+      email: user.email,
+      locale: user.locale,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      repositories: user.repositories?.length ?? 0,
+      commits: user.commits?.length ?? 0,
+      pullRequests: user.pullRequests?.length ?? 0,
+    };
+  }
+
 
   findByGithubId(githubId: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { githubId } });
