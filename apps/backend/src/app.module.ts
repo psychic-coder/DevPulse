@@ -13,6 +13,7 @@ import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { GithubSyncModule } from './github-sync/github-sync.module';
+import { DigestsModule } from './digests/digests.module';
 import { CacheModule } from './common/cache/cache.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { RealtimeModule } from './realtime/realtime.module';
@@ -31,6 +32,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     PostsModule,
     CommentsModule,
     GithubSyncModule,
+    DigestsModule,
     AnalyticsModule,
     RealtimeModule,
   ],

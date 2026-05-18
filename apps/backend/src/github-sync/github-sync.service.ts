@@ -13,6 +13,7 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { decryptToken } from '../common/utils/crypto.util';
+import { PrScoreService } from './pr-score.service';
 
 @Injectable()
 export class GithubSyncService {
@@ -30,6 +31,7 @@ export class GithubSyncService {
     private githubService: GithubService,
     private usersService: UsersService,
     private realtimeGateway: RealtimeGateway,
+    private prScoreService: PrScoreService,
   ) {}
 
   /**
@@ -342,6 +344,15 @@ export class GithubSyncService {
       existingPr.commitsCount = pr.commits || 0;
       existingPr.syncedAt = new Date();
       await this.pullRequestRepo.save(existingPr);
+
+      // async PR scoring
+      try {
+        this.prScoreService?.scorePullRequest?.(existingPr).catch((e) =>
+          this.logger.warn('PR scoring failed: ' + e.message),
+        );
+      } catch (e) {
+        this.logger.warn('PR scoring invocation error: ' + e.message);
+      }
     } else {
       const newPr = this.pullRequestRepo.create({
         user: { id: userId },
@@ -362,6 +373,15 @@ export class GithubSyncService {
         syncedAt: new Date(),
       });
       await this.pullRequestRepo.save(newPr);
+
+      // async PR scoring for new PRs
+      try {
+        this.prScoreService?.scorePullRequest?.(newPr).catch((e) =>
+          this.logger.warn('PR scoring failed: ' + e.message),
+        );
+      } catch (e) {
+        this.logger.warn('PR scoring invocation error: ' + e.message);
+      }
 
       // Emit new PR event in real-time
       if (this.realtimeGateway.hasActiveConnections(userId)) {

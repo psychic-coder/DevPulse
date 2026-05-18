@@ -104,6 +104,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { githubId } });
   }
 
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
   async updateRefreshToken(
     userId: string,
     refreshToken: string,

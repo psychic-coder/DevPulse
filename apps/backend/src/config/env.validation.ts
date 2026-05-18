@@ -19,4 +19,6 @@ export const envValidationSchema = Joi.object({
   REDIS_URL: Joi.string().uri().allow('').optional(),
   REDIS_DB: Joi.number().integer().min(0).default(0),
   ENCRYPTION_SECRET: Joi.string().min(32).required(),
+  OPENROUTER_API_KEY: Joi.string().allow('').optional(),
+  OPENROUTER_MODEL: Joi.string().allow('').optional(),
 });

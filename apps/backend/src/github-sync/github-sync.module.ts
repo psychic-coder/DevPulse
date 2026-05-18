@@ -10,6 +10,8 @@ import { User } from '../users/entities/user.entity';
 import { GithubModule } from '../github/github.module';
 import { UsersModule } from '../users/users.module';
 import { RealtimeModule } from '../realtime/realtime.module';
+import { PrScoreService } from './pr-score.service';
+import { AiService } from '../shared/ai.service';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { RealtimeModule } from '../realtime/realtime.module';
     RealtimeModule,
   ],
   controllers: [GithubSyncController],
-  providers: [GithubSyncService, GithubSyncCronService],
+  providers: [GithubSyncService, GithubSyncCronService, PrScoreService, AiService],
   exports: [GithubSyncService],
 })
 export class GithubSyncModule {}
