@@ -14,6 +14,7 @@ import { PostsModule } from './posts/posts.module';
 import { CommentsModule } from './comments/comments.module';
 import { GithubSyncModule } from './github-sync/github-sync.module';
 import { CacheModule } from './common/cache/cache.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { CacheModule } from './common/cache/cache.module';
     PostsModule,
     CommentsModule,
     GithubSyncModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
