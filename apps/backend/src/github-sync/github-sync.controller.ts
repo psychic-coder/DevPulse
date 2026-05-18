@@ -27,6 +27,18 @@ export class GithubSyncController {
   }
 
   /**
+   * Get streak stats computed from persisted commits for the authenticated user
+   */
+  @Get('github/streaks')
+  async getGithubStreaks(@CurrentUser() user: { sub: string }) {
+    const data = await this.githubSyncService.getUserStreaks(user.sub);
+    return {
+      success: true,
+      data,
+    };
+  }
+
+  /**
    * Get synced GitHub data for the authenticated user
    */
   @Get('github')

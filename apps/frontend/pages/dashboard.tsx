@@ -71,7 +71,43 @@ export default function Dashboard() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [reposData, setReposData] = useState<any[]>([]);
+  const [commitsData, setCommitsData] = useState<any[]>([]);
+  const [prsData, setPrsData] = useState<any[]>([]);
   const { fetchWithAuth, user } = useAuth();
+
+  const [streaks, setStreaks] = useState<{ currentStreak: number; longestStreak: number; lastCommitDate: string | null }>({
+    currentStreak: 0,
+    longestStreak: 0,
+    lastCommitDate: null,
+  });
+
+  // Fetch server-computed streaks
+  useEffect(() => {
+    if (!user?.id) return;
+
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetchWithAuth('/sync/github/streaks');
+        if (!res.ok) throw new Error('failed to fetch streaks');
+        const json = await res.json();
+        const data = json?.data ?? json;
+        if (!mounted) return;
+        setStreaks({
+          currentStreak: data.currentStreak ?? 0,
+          longestStreak: data.longestStreak ?? 0,
+          lastCommitDate: data.lastCommitDate ?? null,
+        });
+      } catch (err) {
+        console.debug('Failed to load streaks from server', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id, fetchWithAuth, commitsData]);
 
   // Load user stats
   useEffect(() => {
@@ -83,6 +119,72 @@ export default function Dashboard() {
       .then((data) => setStats(data))
       .catch((err) => console.error("Failed to load stats:", err))
       .finally(() => setLoading(false));
+  }, [user?.id, fetchWithAuth]);
+
+  // Load synced GitHub data (repos, commits, PRs) and map for UI
+  useEffect(() => {
+    if (!user?.id) return;
+
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetchWithAuth('/sync/github');
+        if (!res.ok) throw new Error('failed to fetch sync data');
+        const json = await res.json();
+        const data = json?.data ?? json;
+
+        if (!mounted) return;
+
+        const repositories = data.repositories ?? [];
+        const commits = data.commits ?? [];
+        const pullRequests = data.pullRequests ?? [];
+
+        // Map commits to component shape
+        const mappedCommits = commits
+          .slice()
+          .sort((a: any, b: any) => new Date(b.committedAt).getTime() - new Date(a.committedAt).getTime())
+          .map((c: any) => ({
+            sha: c.sha,
+            message: c.message,
+            author: c.authorName || c.author || 'unknown',
+            date: c.committedAt || c.committed_at || c.createdAt,
+            repo: c.repository?.name || c.repositoryName || 'unknown',
+            url: c.url || '#',
+          }));
+
+        // Map repos to include commit/pr counts
+        const repoCommitCounts: Record<string, number> = {};
+        for (const c of commits) {
+          const repoName = c.repository?.name || c.repositoryName || 'unknown';
+          repoCommitCounts[repoName] = (repoCommitCounts[repoName] || 0) + 1;
+        }
+
+        const repoPrCounts: Record<string, number> = {};
+        for (const pr of pullRequests) {
+          const repo = pr.repository?.name || pr.repositoryName || 'unknown';
+          repoPrCounts[repo] = (repoPrCounts[repo] || 0) + 1;
+        }
+
+        const mappedRepos = repositories.map((r: any) => ({
+          name: r.name,
+          commits: repoCommitCounts[r.name] || 0,
+          prs: repoPrCounts[r.name] || 0,
+          stars: r.stars ?? r.stargazers_count ?? 0,
+          language: r.language || 'Unknown',
+          url: r.url || r.html_url || '#',
+        }));
+
+        setReposData(mappedRepos);
+        setCommitsData(mappedCommits);
+        setPrsData(pullRequests);
+      } catch (err) {
+        console.debug('Failed to load synced GitHub data', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, [user?.id, fetchWithAuth]);
 
   // Trigger sync
@@ -261,7 +363,11 @@ export default function Dashboard() {
           <div className="space-y-8">
             {/* Section 1: Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <StreakCounter currentStreak={12} longestStreak={45} />
+              <StreakCounter
+                currentStreak={streaks.currentStreak}
+                longestStreak={streaks.longestStreak}
+                lastCommitDate={streaks.lastCommitDate}
+              />
               <PRStatusSummary />
             </div>
 
@@ -280,14 +386,14 @@ export default function Dashboard() {
 
             {/* Section 3: Charts & Analytics */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <ContributionGraph />
+              <ContributionGraph commits={commitsData} />
               <LanguageChart />
             </div>
 
             {/* Section 4: Repositories & Commits */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <MostActiveRepos />
-              <RecentCommits />
+              <MostActiveRepos repos={reposData} />
+              <RecentCommits commits={commitsData} />
             </div>
 
             {/* Section 5: Activity Feed */}

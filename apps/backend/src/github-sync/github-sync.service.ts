@@ -404,6 +404,73 @@ export class GithubSyncService {
   }
 
   /**
+   * Compute streaks (current and longest) from persisted commits for a user.
+   */
+  async getUserStreaks(userId: string): Promise<{
+    currentStreak: number;
+    longestStreak: number;
+    lastCommitDate: string | null;
+  }> {
+    const commits = await this.commitRepo.find({
+      where: { userId },
+      order: { committedAt: 'ASC' },
+      select: ['committedAt'],
+    });
+
+    const dateSet = new Set<string>();
+    for (const c of commits) {
+      if (!c.committedAt) continue;
+      const day = c.committedAt.toISOString().slice(0, 10);
+      dateSet.add(day);
+    }
+
+    const dates = Array.from(dateSet).sort();
+
+    // Longest consecutive streak
+    let longest = 0;
+    let current = 0;
+    let prev: string | null = null;
+    for (const ds of dates) {
+      if (!prev) {
+        current = 1;
+      } else {
+        const d = new Date(ds);
+        const p = new Date(prev);
+        const diff = Math.round((d.getTime() - p.getTime()) / 86400000);
+        if (diff === 1) {
+          current += 1;
+        } else {
+          current = 1;
+        }
+      }
+      if (current > longest) longest = current;
+      prev = ds;
+    }
+
+    // Current streak ending today (UTC)
+    let currentStreak = 0;
+    const today = new Date();
+    const check = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    while (true) {
+      const key = check.toISOString().slice(0, 10);
+      if (dateSet.has(key)) {
+        currentStreak += 1;
+        check.setUTCDate(check.getUTCDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    const lastCommitDate = dates.length ? dates[dates.length - 1] : null;
+
+    return {
+      currentStreak,
+      longestStreak: longest,
+      lastCommitDate,
+    };
+  }
+
+  /**
    * Clear old data (optional cleanup)
    */
   async clearOldData(userId: string, daysOld: number = 180): Promise<number> {
