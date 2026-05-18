@@ -69,10 +69,18 @@ export class GithubSyncService {
       );
 
       // Emit sync complete event
+      // Persist last synced timestamp on the user record
+      const syncedAt = new Date();
+      try {
+        await this.usersService.updateLastSynced(user.id, syncedAt);
+      } catch (e) {
+        this.logger.warn('Failed to update lastSynced on user: ' + e.message);
+      }
+
       this.realtimeGateway.emitSyncComplete(userId, {
         totalCommits: commitsCount,
         totalPRs: prsCount,
-        syncedAt: new Date(),
+        syncedAt,
         newCommits: commitsCount,
         newPRs: prsCount,
       });
@@ -404,10 +412,11 @@ export class GithubSyncService {
    * Get synced data for a user
    */
   async getUserData(userId: string) {
-    const [repositories, commits, pullRequests] = await Promise.all([
+    const [repositories, commits, pullRequests, user] = await Promise.all([
       this.repositoryRepo.find({ where: { userId } }),
       this.commitRepo.find({ where: { userId } }),
       this.pullRequestRepo.find({ where: { userId } }),
+      this.usersService.findById(userId),
     ]);
 
     return {
@@ -418,7 +427,7 @@ export class GithubSyncService {
         totalRepositories: repositories.length,
         totalCommits: commits.length,
         totalPullRequests: pullRequests.length,
-        lastSyncedAt: new Date(),
+        lastSyncedAt: (user as any)?.lastSyncedAt ?? null,
       },
     };
   }

@@ -95,6 +95,7 @@ type DashboardDataState = {
   streaks: Streaks;
   analytics: DashboardAnalytics | null;
   digest: DashboardDigest | null;
+  lastSyncedAt?: string | null;
 };
 
 const defaultStreaks: Streaks = {
@@ -222,6 +223,7 @@ export function useDashboardData() {
         streaks: streakData,
         analytics: analyticsData,
         digest: digestData,
+        lastSyncedAt: syncData?.summary?.lastSyncedAt ?? null,
       });
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
@@ -279,6 +281,7 @@ export function useDashboardData() {
   return {
     ...state,
     user,
+    lastSyncedAt: state.lastSyncedAt ?? null,
     todayCommitCount,
     prScoreAverage,
     languageBreakdown,

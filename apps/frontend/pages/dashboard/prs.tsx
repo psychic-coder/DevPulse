@@ -6,7 +6,7 @@ import { useDashboardData } from "../../hooks/useDashboardData";
 
 export default function DashboardPrsPage() {
   const router = useRouter();
-  const { user, loading, syncing, pullRequests, syncNow } = useDashboardData();
+  const { user, loading, syncing, pullRequests, syncNow, lastSyncedAt } = useDashboardData();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/");
@@ -24,7 +24,7 @@ export default function DashboardPrsPage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell active="prs" title="PR Review Scores" description="AI-assisted scoring for review quality and merge readiness." username={user.githubUsername} syncing={syncing} onSync={syncNow}>
+    <DashboardShell active="prs" title="PR Review Scores" description="AI-assisted scoring for review quality and merge readiness." username={user.githubUsername} syncing={syncing} onSync={syncNow} lastSyncedAt={lastSyncedAt}>
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="card p-5">

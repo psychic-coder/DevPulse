@@ -6,7 +6,7 @@ import { useDashboardData } from "../../hooks/useDashboardData";
 
 export default function DashboardDigestPage() {
   const router = useRouter();
-  const { user, loading, syncing, digest, syncNow } = useDashboardData();
+  const { user, loading, syncing, digest, syncNow, lastSyncedAt } = useDashboardData();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/");
@@ -15,7 +15,7 @@ export default function DashboardDigestPage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell active="digest" title="Weekly Digest" description="A readable summary of your week, generated from synced GitHub activity." username={user.githubUsername} syncing={syncing} onSync={syncNow}>
+    <DashboardShell active="digest" title="Weekly Digest" description="A readable summary of your week, generated from synced GitHub activity." username={user.githubUsername} syncing={syncing} onSync={syncNow} lastSyncedAt={lastSyncedAt}>
       <div className="space-y-6">
         <DigestPreviewCard content={digest?.content} weekStart={digest?.weekStart} />
         <section className="card p-5 sm:p-6">

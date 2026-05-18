@@ -5,7 +5,7 @@ import { useDashboardData } from "../../hooks/useDashboardData";
 
 export default function DashboardSettingsPage() {
   const router = useRouter();
-  const { user, loading, syncing, stats, syncNow } = useDashboardData();
+  const { user, loading, syncing, stats, syncNow, lastSyncedAt } = useDashboardData();
   const [locale, setLocale] = useState("en");
   const [autoSync, setAutoSync] = useState(true);
 
@@ -23,7 +23,7 @@ export default function DashboardSettingsPage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell active="settings" title="Settings" description="Control locale, sync habits, and profile preferences." username={user.githubUsername} syncing={syncing} onSync={syncNow}>
+    <DashboardShell active="settings" title="Settings" description="Control locale, sync habits, and profile preferences." username={user.githubUsername} syncing={syncing} onSync={syncNow} lastSyncedAt={lastSyncedAt}>
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="card p-5 sm:p-6 space-y-5">
           <div>

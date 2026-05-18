@@ -53,6 +53,7 @@ export default function DashboardIndexPage() {
     prScoreAverage,
     languageBreakdown,
     syncNow,
+    lastSyncedAt,
   } = useDashboardData();
 
   useEffect(() => {
@@ -126,6 +127,7 @@ export default function DashboardIndexPage() {
       avatarUrl={stats?.avatarUrl ?? null}
       syncing={syncing}
       onSync={syncNow}
+      lastSyncedAt={lastSyncedAt}
     >
         <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
           <div className="space-y-6">

@@ -8,7 +8,7 @@ import { useDashboardData } from "../../hooks/useDashboardData";
 
 export default function DashboardCommitsPage() {
   const router = useRouter();
-  const { user, loading, syncing, commits, syncNow } = useDashboardData();
+  const { user, loading, syncing, commits, syncNow, lastSyncedAt } = useDashboardData();
 
   useEffect(() => {
     if (!loading && !user) router.replace("/");
@@ -23,7 +23,7 @@ export default function DashboardCommitsPage() {
   if (loading || !user) return null;
 
   return (
-    <DashboardShell active="commits" title="Commits Explorer" description="Explore commit rhythm, heatmap patterns, and the latest changes." username={user.githubUsername} syncing={syncing} onSync={syncNow}>
+    <DashboardShell active="commits" title="Commits Explorer" description="Explore commit rhythm, heatmap patterns, and the latest changes." username={user.githubUsername} syncing={syncing} onSync={syncNow} lastSyncedAt={lastSyncedAt}>
       <div className="space-y-6">
         <CommitFrequencyChart data={weekdayData} />
         <ActivityHeatmap commits={commits.map((commit) => ({ date: commit.date, count: 1 }))} />

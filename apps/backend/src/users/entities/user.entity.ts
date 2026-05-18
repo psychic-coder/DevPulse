@@ -45,6 +45,9 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
+  @Column({ name: 'last_synced_at', type: 'timestamp', nullable: true })
+  lastSyncedAt!: Date | null;
+
   @OneToMany(() => Repository, (repo) => repo.user)
   repositories: Repository[];
 

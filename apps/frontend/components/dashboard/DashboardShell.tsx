@@ -22,6 +22,7 @@ export function DashboardShell({
   syncing,
   onSync,
   children,
+  lastSyncedAt,
 }: {
   active: RouteKey;
   title: string;
@@ -31,6 +32,7 @@ export function DashboardShell({
   syncing?: boolean;
   onSync?: () => void;
   children: ReactNode;
+  lastSyncedAt?: string | null;
 }) {
   return (
     <>
@@ -65,8 +67,14 @@ export function DashboardShell({
                   {title}
                 </h1>
                 <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{description}</p>
+                {lastSyncedAt ? (
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-dim)' }}>
+                    Last synced: {new Date(lastSyncedAt).toLocaleString()}
+                  </p>
+                ) : null}
               </div>
             </div>
+
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="flex flex-wrap gap-2">
