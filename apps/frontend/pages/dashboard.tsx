@@ -5,6 +5,14 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Navbar } from "../components/Navbar";
 import ActivityFeed from "../components/ActivityFeed";
+import { ContributionGraph } from "../components/ContributionGraph";
+import { StreakCounter } from "../components/StreakCounter";
+import { LanguageChart } from "../components/LanguageChart";
+import { RecentCommits } from "../components/RecentCommits";
+import { PRStatusSummary } from "../components/PRStatusSummary";
+import { MostActiveRepos } from "../components/MostActiveRepos";
+import { InsightsCard } from "../components/InsightsCard";
+import { SyncStatus } from "../components/SyncStatus";
 import { useAuth } from "../context/AuthContext";
 
 interface UserStats {
@@ -70,31 +78,26 @@ export default function Dashboard() {
     if (!user?.id) return;
 
     setLoading(true);
-    fetchWithAuth(`http://localhost:3000/users/${user.id}`)
+    fetchWithAuth(`/users/${user.id}`)
       .then((r) => r.json())
       .then((data) => setStats(data))
       .catch((err) => console.error("Failed to load stats:", err))
       .finally(() => setLoading(false));
-  }, [user?.id]);
+  }, [user?.id, fetchWithAuth]);
 
   // Trigger sync
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const response = await fetchWithAuth(
-        "http://localhost:3000/sync/github",
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetchWithAuth("/sync/github", {
+        method: "POST",
+      });
       if (response.ok) {
         const result = await response.json();
         console.log("Sync completed:", result);
         // Refresh stats
         if (user?.id) {
-          const statsResponse = await fetchWithAuth(
-            `http://localhost:3000/users/${user.id}`
-          );
+          const statsResponse = await fetchWithAuth(`/users/${user.id}`);
           const statsData = await statsResponse.json();
           setStats(statsData);
         }
@@ -255,97 +258,45 @@ export default function Dashboard() {
           ) : null}
 
           {/* Main content grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left column - Activity Feed */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="lg:col-span-2">
-                <ActivityFeed maxItems={15} />
-              </div>
-            </motion.div>
+          <div className="space-y-8">
+            {/* Section 1: Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <StreakCounter currentStreak={12} longestStreak={45} />
+              <PRStatusSummary />
+            </div>
 
-            {/* Right column - Quick links */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="space-y-4">
-                <div
-                  className="rounded-xl p-6"
-                  style={{
-                    background: "var(--bg-surface)",
-                    border: "1px solid rgba(99,179,237,0.08)",
-                  }}
-                >
-                  <h3
-                    className="font-semibold mb-4"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    Quick Links
-                  </h3>
-                  <nav className="space-y-2">
-                    <Link
-                      href="/"
-                      className="block text-sm p-3 rounded-lg transition-colors"
-                      style={{
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      ← Back to Home
-                    </Link>
-                    <a
-                      href="https://github.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-sm p-3 rounded-lg transition-colors"
-                      style={{
-                        color: "var(--text-secondary)",
-                      }}
-                    >
-                      GitHub Profile →
-                    </a>
-                  </nav>
-                </div>
+            {/* Section 2: Insights & Sync */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InsightsCard />
+              <SyncStatus
+                info={{
+                  lastSync: new Date().toISOString(),
+                  nextScheduled: new Date(Date.now() + 21600000).toISOString(),
+                  status: "synced",
+                  itemsCount: 237,
+                }}
+              />
+            </div>
 
-                <div
-                  className="rounded-xl p-6"
-                  style={{
-                    background: "var(--bg-surface)",
-                    border: "1px solid rgba(99,179,237,0.08)",
-                  }}
-                >
-                  <h3
-                    className="font-semibold mb-3"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    Sync Status
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span style={{ color: "var(--text-dim)" }}>
-                        Last synced:
-                      </span>
-                      <span style={{ color: "var(--text-secondary)" }}>
-                        Just now
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span style={{ color: "var(--text-dim)" }}>Status:</span>
-                      <span
-                        className="flex items-center gap-1"
-                        style={{ color: "var(--text-secondary)" }}
-                      >
-                        <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
-                        Connected
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Section 3: Charts & Analytics */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ContributionGraph />
+              <LanguageChart />
+            </div>
+
+            {/* Section 4: Repositories & Commits */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <MostActiveRepos />
+              <RecentCommits />
+            </div>
+
+            {/* Section 5: Activity Feed */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <ActivityFeed maxItems={15} />
             </motion.div>
           </div>
         </div>
