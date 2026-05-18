@@ -7,6 +7,7 @@ import {
   CreateDateColumn,
   Unique,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Commit } from './commit.entity';
@@ -19,21 +20,22 @@ export class Repository {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.repositories, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'bigint' })
+  @Column({ name: 'github_repo_id', type: 'bigint' })
   githubRepoId: number;
 
   @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ name: 'full_name', type: 'varchar' })
   fullName: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -45,7 +47,7 @@ export class Repository {
   @Column({ type: 'int', default: 0 })
   forks: number;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_private', type: 'boolean', default: false })
   isPrivate: boolean;
 
   @Column({ type: 'text', nullable: true })
@@ -54,13 +56,13 @@ export class Repository {
   @Column({ type: 'varchar', nullable: true })
   url: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'updated_at', type: 'timestamp', nullable: true })
   updatedAt: Date;
 
-  @Column({ type: 'timestamp', default: () => 'now()' })
+  @Column({ name: 'synced_at', type: 'timestamp', default: () => 'now()' })
   syncedAt: Date;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @OneToMany(() => Commit, (commit) => commit.repository)

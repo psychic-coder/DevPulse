@@ -178,6 +178,7 @@ export class GithubSyncService {
             since.toISOString(),
             page,
             perPage,
+            user.githubUsername,
           );
 
           if (!commits || commits.length === 0) break;
@@ -266,6 +267,7 @@ export class GithubSyncService {
           if (!prs || prs.length === 0) break;
 
           for (const pr of prs) {
+            if (pr.user?.login !== user.githubUsername) continue;
             await this.savePullRequest(user.id, repo.id, pr);
             totalCount++;
           }
@@ -289,6 +291,7 @@ export class GithubSyncService {
 
           let hasRecentPr = false;
           for (const pr of prs) {
+            if (pr.user?.login !== user.githubUsername) continue;
             const updatedAt = new Date(pr.updated_at);
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

@@ -5,6 +5,7 @@ import {
   ManyToOne,
   Unique,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Repository } from './repository.entity';
@@ -19,23 +20,25 @@ export class PullRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.pullRequests, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'repository_id', type: 'uuid' })
   repositoryId: string;
 
   @ManyToOne(() => Repository, (repo) => repo.pullRequests, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'repository_id' })
   repository: Repository;
 
-  @Column({ type: 'bigint' })
+  @Column({ name: 'github_pr_id', type: 'bigint' })
   githubPrId: number;
 
   @Column({ type: 'varchar' })
@@ -50,13 +53,13 @@ export class PullRequest {
   @Column({ type: 'varchar', nullable: true })
   author: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ name: 'created_at', type: 'timestamp' })
   createdAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'merged_at', type: 'timestamp', nullable: true })
   mergedAt: Date | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'closed_at', type: 'timestamp', nullable: true })
   closedAt: Date | null;
 
   @Column({ type: 'int', default: 0 })
@@ -65,18 +68,18 @@ export class PullRequest {
   @Column({ type: 'int', default: 0 })
   deletions: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ name: 'changed_files', type: 'int', default: 0 })
   changedFiles: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ name: 'comments_count', type: 'int', default: 0 })
   commentsCount: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ name: 'commits_count', type: 'int', default: 0 })
   commitsCount: number;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ name: 'pr_score', type: 'float', nullable: true })
   prScore: number;
 
-  @Column({ type: 'timestamp', default: () => 'now()' })
+  @Column({ name: 'synced_at', type: 'timestamp', default: () => 'now()' })
   syncedAt: Date;
 }

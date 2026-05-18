@@ -174,6 +174,7 @@ export class GithubService {
     since: string,
     page: number = 1,
     perPage: number = 100,
+    author?: string,
   ): Promise<any[]> {
     // Check cache for first page only
     if (page === 1) {
@@ -187,8 +188,9 @@ export class GithubService {
       }
     }
 
+    const authorQuery = author ? `&author=${encodeURIComponent(author)}` : '';
     const response = await fetch(
-      `${this.GITHUB_API_BASE}/repos/${repoFullName}/commits?since=${since}&page=${page}&per_page=${perPage}`,
+      `${this.GITHUB_API_BASE}/repos/${repoFullName}/commits?since=${since}&page=${page}&per_page=${perPage}${authorQuery}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

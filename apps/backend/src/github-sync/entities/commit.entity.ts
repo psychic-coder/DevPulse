@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   Unique,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Repository } from './repository.entity';
@@ -19,18 +20,20 @@ export class Commit {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.commits, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'repository_id', type: 'uuid' })
   repositoryId: string;
 
   @ManyToOne(() => Repository, (repo) => repo.commits, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'repository_id' })
   repository: Repository;
 
   @Column({ type: 'varchar' })
@@ -39,13 +42,13 @@ export class Commit {
   @Column({ type: 'text' })
   message: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'author_name', type: 'varchar', nullable: true })
   authorName: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'author_email', type: 'varchar', nullable: true })
   authorEmail: string;
 
-  @Column({ type: 'timestamp' })
+  @Column({ name: 'committed_at', type: 'timestamp' })
   committedAt: Date;
 
   @Column({ type: 'int', default: 0 })
@@ -54,9 +57,9 @@ export class Commit {
   @Column({ type: 'int', default: 0 })
   deletions: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ name: 'files_changed', type: 'int', default: 0 })
   filesChanged: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
