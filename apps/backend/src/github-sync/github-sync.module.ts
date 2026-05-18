@@ -9,12 +9,14 @@ import { PullRequest } from './entities/pull-request.entity';
 import { User } from '../users/entities/user.entity';
 import { GithubModule } from '../github/github.module';
 import { UsersModule } from '../users/users.module';
+import { RealtimeModule } from '../realtime/realtime.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Repository, Commit, PullRequest, User]),
     GithubModule,
     UsersModule,
+    RealtimeModule,
   ],
   controllers: [GithubSyncController],
   providers: [GithubSyncService, GithubSyncCronService],

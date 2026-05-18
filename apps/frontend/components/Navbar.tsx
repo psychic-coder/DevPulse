@@ -88,13 +88,22 @@ export function Navbar() {
 
           {/* New post link for authenticated users */}
           {user && (
-            <Link
-              href="/posts/new"
-              className="text-sm font-medium"
-              style={{ color: "#93c5fd" }}
-            >
-              New Post
-            </Link>
+            <>
+              <Link
+                href="/dashboard"
+                className="text-sm font-medium"
+                style={{ color: "#93c5fd" }}
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/posts/new"
+                className="text-sm font-medium"
+                style={{ color: "#93c5fd" }}
+              >
+                New Post
+              </Link>
+            </>
           )}
         </div>
 

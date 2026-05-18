@@ -11,6 +11,7 @@ import { PullRequest } from './entities/pull-request.entity';
 import { GithubService } from '../github/github.service';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { decryptToken } from '../common/utils/crypto.util';
 
 @Injectable()
@@ -28,6 +29,7 @@ export class GithubSyncService {
     private pullRequestRepo: TypeOrmRepository<PullRequest>,
     private githubService: GithubService,
     private usersService: UsersService,
+    private realtimeGateway: RealtimeGateway,
   ) {}
 
   /**
@@ -42,6 +44,9 @@ export class GithubSyncService {
     if (!user) {
       throw new BadRequestException('User not found');
     }
+
+    // Emit sync started event
+    this.realtimeGateway.emitSyncStarted(userId, new Date());
 
     const githubToken = decryptToken(user.githubToken);
     const rateLimitInfo = await this.githubService.getRateLimit(githubToken);
@@ -60,6 +65,15 @@ export class GithubSyncService {
       this.logger.log(
         `Synced user ${userId}: ${reposCount} repos, ${commitsCount} commits, ${prsCount} PRs`,
       );
+
+      // Emit sync complete event
+      this.realtimeGateway.emitSyncComplete(userId, {
+        totalCommits: commitsCount,
+        totalPRs: prsCount,
+        syncedAt: new Date(),
+        newCommits: commitsCount,
+        newPRs: prsCount,
+      });
 
       return {
         repositories: reposCount,
@@ -193,6 +207,18 @@ export class GithubSyncService {
               });
               await this.commitRepo.save(newCommit);
               totalCount++;
+
+              // Emit new commit event in real-time
+              if (this.realtimeGateway.hasActiveConnections(user.id)) {
+                this.realtimeGateway.emitNewCommit(user.id, {
+                  sha: newCommit.sha,
+                  message: newCommit.message,
+                  repo: repo.name,
+                  committed_at: newCommit.committedAt.toISOString(),
+                  additions: newCommit.additions,
+                  deletions: newCommit.deletions,
+                });
+              }
             }
           }
 
@@ -333,6 +359,21 @@ export class GithubSyncService {
         syncedAt: new Date(),
       });
       await this.pullRequestRepo.save(newPr);
+
+      // Emit new PR event in real-time
+      if (this.realtimeGateway.hasActiveConnections(userId)) {
+        const repo = await this.repositoryRepo.findOne({
+          where: { id: repositoryId },
+        });
+        this.realtimeGateway.emitNewPR(userId, {
+          id: newPr.githubPrId.toString(),
+          title: newPr.title,
+          state: newPr.state as 'open' | 'closed' | 'merged',
+          repo: repo?.name || 'unknown',
+          created_at: newPr.createdAt.toISOString(),
+          url: pr.html_url,
+        });
+      }
     }
   }
 
