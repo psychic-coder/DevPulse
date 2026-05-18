@@ -79,7 +79,9 @@ export class AnalyticsController {
         lastUpdated: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`Error fetching user analytics: ${error.message}`);
+      this.logger.error(
+        `Error fetching user analytics: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw new HttpException(
         'Failed to fetch analytics',
         HttpStatus.INTERNAL_SERVER_ERROR,

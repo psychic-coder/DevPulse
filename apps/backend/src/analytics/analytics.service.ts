@@ -18,6 +18,10 @@ export class AnalyticsService {
   async analyzeCommits(commits: any[]): Promise<any> {
     try {
       if (!commits || commits.length === 0) {
+        const frequencyByHour: Record<number, number> = {};
+        for (let i = 0; i < 24; i++) {
+          frequencyByHour[i] = 0;
+        }
         return {
           peak_hour: 0,
           peak_day: 'Monday',
@@ -26,7 +30,7 @@ export class AnalyticsService {
           current_streak_days: 0,
           total_additions: 0,
           total_deletions: 0,
-          commit_frequency_by_hour: Array(24).fill(0).reduce((acc, _, i) => ({...acc, [i]: 0}), {}),
+          commit_frequency_by_hour: frequencyByHour,
           commit_frequency_by_day: {
             Monday: 0,
             Tuesday: 0,
@@ -56,10 +60,13 @@ export class AnalyticsService {
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const data = await response.json();
       return data;
     } catch (error) {
-      this.logger.error(`Error analyzing commits: ${error.message}`);
+      this.logger.error(
+        `Error analyzing commits: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw new HttpException(
         'Analytics service unavailable',
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -103,10 +110,13 @@ export class AnalyticsService {
         );
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const data = await response.json();
       return data;
     } catch (error) {
-      this.logger.error(`Error analyzing languages: ${error.message}`);
+      this.logger.error(
+        `Error analyzing languages: ${error instanceof Error ? error.message : String(error)}`,
+      );
       throw new HttpException(
         'Analytics service unavailable',
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -124,7 +134,9 @@ export class AnalyticsService {
       });
       return response.ok;
     } catch (error) {
-      this.logger.warn(`Analytics health check failed: ${error.message}`);
+      this.logger.warn(
+        `Analytics health check failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return false;
     }
   }

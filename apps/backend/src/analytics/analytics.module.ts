@@ -7,10 +7,7 @@ import { Commit } from '../github-sync/entities/commit.entity';
 import { Repository } from '../github-sync/entities/repository.entity';
 
 @Module({
-  imports: [
-    ConfigModule,
-    TypeOrmModule.forFeature([Commit, Repository]),
-  ],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Commit, Repository])],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],
   exports: [AnalyticsService],
