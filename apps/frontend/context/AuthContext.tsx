@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Attempt a silent refresh on mount if no access token is present.
-  // This allows restoring a session using the httpOnly refresh cookie after a full page reload.
+  // This allows restoring a session using the stored refresh token after a full page reload.
   React.useEffect(() => {
     if (!token) {
       trySilentRefresh();
@@ -94,9 +94,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refreshAccessToken() {
     try {
+      const refreshToken = localStorage.getItem("authRefreshToken");
+      if (!refreshToken) throw new Error("no refresh token");
+
       const res = await fetch('/auth/refresh', {
         method: 'POST',
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
       });
       if (!res.ok) throw new Error('refresh failed');
       const data = await res.json();
@@ -123,9 +127,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Try a silent refresh without forcing a logout on failure.
   async function trySilentRefresh(): Promise<string | null> {
     try {
+      const refreshToken = localStorage.getItem("authRefreshToken");
+      if (!refreshToken) return null;
+
       const res = await fetch('/auth/refresh', {
         method: 'POST',
-        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
       });
       if (!res.ok) return null;
       const data = await res.json();

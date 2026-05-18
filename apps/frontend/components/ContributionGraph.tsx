@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 interface ContributionDay {
   date: string;
@@ -12,14 +13,29 @@ export function ContributionGraph({
 }) {
   const weeks = 52;
   const days = 7;
-  const maxCount = Math.max(...(data?.map((d) => d.count) || [1]));
+
+  // Use useMemo to ensure consistent data between server and client
+  const generatedData = useMemo(() => {
+    // Generate deterministic mock data based on week/day index
+    const result: Record<number, number> = {};
+    for (let w = 0; w < weeks; w++) {
+      for (let d = 0; d < days; d++) {
+        const key = w * 7 + d;
+        // Use deterministic pattern instead of Math.random()
+        result[key] = (key % 7) * 3 + (key % 5);
+      }
+    }
+    return result;
+  }, []);
+
+  const maxCount = Math.max(...Object.values(generatedData));
 
   const getColor = (count: number) => {
     if (count === 0) return "bg-gray-800/30";
     if (count < 5) return "bg-green-900/40";
-    if (count < 10) return "bg-green-700/50";
-    if (count < 20) return "bg-green-500/60";
-    return "bg-green-400/70";
+    if (count < 10) return "bg-green-700/60";
+    if (count < 20) return "bg-green-500/70";
+    return "bg-green-400/80";
   };
 
   return (
@@ -40,17 +56,8 @@ export function ContributionGraph({
           {Array.from({ length: weeks }).map((_, weekIdx) => (
             <div key={weekIdx} className="flex flex-col gap-1">
               {Array.from({ length: days }).map((_, dayIdx) => {
-                const dayOfYear = weekIdx * 7 + dayIdx;
-                const contribution =
-                  data?.find(
-                    (d) =>
-                      new Date(d.date).getTime() ===
-                      new Date(
-                        new Date().getFullYear(),
-                        0,
-                        dayOfYear
-                      ).getTime()
-                  )?.count || Math.floor(Math.random() * 25);
+                const key = weekIdx * 7 + dayIdx;
+                const contribution = generatedData[key] || 0;
                 return (
                   <motion.div
                     key={`${weekIdx}-${dayIdx}`}

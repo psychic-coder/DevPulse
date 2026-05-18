@@ -128,7 +128,7 @@ export class GithubSyncService {
         } else {
           // Create new repository
           const newRepo = this.repositoryRepo.create({
-            userId: user.id,
+            user: { id: user.id },
             githubRepoId: repo.id,
             name: repo.name,
             fullName: repo.full_name,
@@ -193,8 +193,8 @@ export class GithubSyncService {
 
             if (!existingCommit) {
               const newCommit = this.commitRepo.create({
-                userId: user.id,
-                repositoryId: repo.id,
+                user: { id: user.id },
+                repository: { id: repo.id },
                 sha: commit.sha,
                 message: commit.commit?.message || '',
                 authorName: commit.commit?.author?.name || null,
@@ -344,8 +344,8 @@ export class GithubSyncService {
       await this.pullRequestRepo.save(existingPr);
     } else {
       const newPr = this.pullRequestRepo.create({
-        userId,
-        repositoryId,
+        user: { id: userId },
+        repository: { id: repositoryId },
         githubPrId: pr.id,
         title: pr.title,
         body: pr.body || null,
