@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 interface Repo {
   name: string;
   commits: number;
@@ -45,9 +43,7 @@ export function MostActiveRepos({
   const sorted = [...data].sort((a, b) => b.commits - a.commits);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="rounded-xl p-6"
       style={{
         background: "var(--bg-surface)",
@@ -60,12 +56,9 @@ export function MostActiveRepos({
 
       <div className="space-y-3">
         {sorted.map((repo, idx) => (
-          <motion.a
+          <a
             key={repo.name}
             href={repo.url || "#"}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.05 }}
             className="block p-3 rounded-lg transition-all hover:bg-blue-500/5"
             style={{
               background: "rgba(99,179,237,0.03)",
@@ -113,26 +106,22 @@ export function MostActiveRepos({
               </div>
             </div>
 
-            <motion.div
+            <div
               className="h-1.5 rounded-full mt-2 overflow-hidden"
               style={{ background: "rgba(99,179,237,0.1)" }}
             >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${(repo.commits / (sorted[0]?.commits || 100)) * 100}%`,
-                }}
-                transition={{ delay: idx * 0.1, duration: 0.6 }}
+              <div
                 className="h-full"
                 style={{
+                  width: `${(repo.commits / (sorted[0]?.commits || 100)) * 100}%`,
                   background:
                     "linear-gradient(90deg, #3b82f6, #06b6d4)",
                 }}
               />
-            </motion.div>
-          </motion.a>
+            </div>
+          </a>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

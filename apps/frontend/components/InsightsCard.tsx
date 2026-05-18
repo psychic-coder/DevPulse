@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 interface Insight {
   title: string;
   value: string;
@@ -42,9 +40,7 @@ export function InsightsCard({
   const data = insights.length > 0 ? insights : defaultInsights;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="rounded-xl p-6"
       style={{
         background: "var(--bg-surface)",
@@ -57,11 +53,8 @@ export function InsightsCard({
 
       <div className="grid grid-cols-2 gap-4">
         {data.map((insight, idx) => (
-          <motion.div
+          <div
             key={insight.title}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: idx * 0.05 }}
             className="rounded-lg p-4 group hover:bg-blue-500/5 transition-colors"
             style={{
               background: "rgba(99,179,237,0.03)",
@@ -88,9 +81,9 @@ export function InsightsCard({
             >
               {insight.description}
             </p>
-          </motion.div>
+          </div>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

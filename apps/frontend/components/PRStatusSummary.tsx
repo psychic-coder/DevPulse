@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 interface PRStats {
   open: number;
   closed: number;
@@ -48,9 +46,7 @@ export function PRStatusSummary({
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="rounded-xl p-6"
       style={{
         background: "var(--bg-surface)",
@@ -63,11 +59,8 @@ export function PRStatusSummary({
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         {statCards.map((stat, idx) => (
-          <motion.div
+          <div
             key={stat.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: idx * 0.05 }}
             className={`rounded-lg p-3 ${stat.bgColor} text-center`}
           >
             <p className="text-2xl mb-1">{stat.icon}</p>
@@ -83,7 +76,7 @@ export function PRStatusSummary({
             >
               {stat.value}
             </p>
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -99,22 +92,20 @@ export function PRStatusSummary({
             {total}
           </span>
         </div>
-        <motion.div
+        <div
           className="h-2 rounded-full mt-3 overflow-hidden"
           style={{ background: "rgba(99,179,237,0.1)" }}
         >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: "100%" }}
-            transition={{ duration: 1, ease: "easeOut" }}
+          <div
             className="h-full rounded-full"
             style={{
+              width: "100%",
               background:
                 "linear-gradient(90deg, #3b82f6, #8b5cf6, #ef4444, #6b7280)",
             }}
           />
-        </motion.div>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

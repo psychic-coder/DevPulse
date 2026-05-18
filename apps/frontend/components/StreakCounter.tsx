@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 export function StreakCounter({
   currentStreak = 0,
   longestStreak = 0,
@@ -14,9 +12,7 @@ export function StreakCounter({
     : false;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+    <div
       className="rounded-xl p-6 grid grid-cols-2 gap-4"
       style={{
         background: "var(--bg-surface)",
@@ -42,9 +38,7 @@ export function StreakCounter({
           <span style={{ color: "var(--text-dim)" }}>days</span>
         </div>
         {isStreakAlive && (
-          <motion.div
-            animate={{ scale: [1, 1.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
+          <div
             className="mt-2 inline-block w-2 h-2 rounded-full"
             style={{ background: "#4ade80" }}
           />
@@ -71,6 +65,6 @@ export function StreakCounter({
           days
         </span>
       </div>
-    </motion.div>
+    </div>
   );
 }

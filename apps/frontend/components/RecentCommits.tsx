@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 interface Commit {
   sha: string;
   message: string;
@@ -68,9 +66,7 @@ export function RecentCommits({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="rounded-xl p-6"
       style={{
         background: "var(--bg-surface)",
@@ -83,12 +79,9 @@ export function RecentCommits({
 
       <div className="space-y-3">
         {displayCommits.map((commit, idx) => (
-          <motion.a
+          <a
             key={commit.sha}
             href={commit.url || "#"}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.05 }}
             className="block p-3 rounded-lg transition-all hover:bg-blue-500/5"
             style={{
               background: "rgba(99,179,237,0.03)",
@@ -149,9 +142,9 @@ export function RecentCommits({
                 </div>
               </div>
             </div>
-          </motion.a>
+          </a>
         ))}
       </div>
-    </motion.div>
+    </div>
   );
 }

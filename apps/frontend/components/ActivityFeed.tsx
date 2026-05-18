@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   useActivityFeed,
   ActivityEvent,
@@ -23,36 +22,6 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   const { events, isConnected, isLoading, clearEvents } = useActivityFeed({
     maxEvents: maxItems,
   });
-
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 20,
-      },
-    },
-    exit: {
-      opacity: 0,
-      x: 20,
-      transition: {
-        duration: 0.2,
-      },
-    },
-  };
 
   const renderCommitEvent = (event: CommitEvent) => {
     const shortSha = event.sha.substring(0, 7);
@@ -315,25 +284,13 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
           </p>
         </div>
       ) : (
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <div className="space-y-3">
-            <AnimatePresence>
-              {events.slice(0, maxItems).map((event, index) => (
-                <motion.div
-                  key={`${event.type}-${index}`}
-                  variants={itemVariants}
-                  layout
-                >
-                  {renderEvent(event)}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </motion.div>
+        <div className="space-y-3">
+          {events.slice(0, maxItems).map((event, index) => (
+            <div key={`${event.type}-${index}`}>
+              {renderEvent(event)}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

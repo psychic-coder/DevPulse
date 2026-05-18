@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 interface LanguageData {
   name: string;
   percentage: number;
@@ -44,9 +42,7 @@ export function LanguageChart({
   const sorted = [...data].sort((a, b) => b.percentage - a.percentage);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="rounded-xl p-6"
       style={{
         background: "var(--bg-surface)",
@@ -59,11 +55,8 @@ export function LanguageChart({
 
       <div className="space-y-4">
         {sorted.map((lang, idx) => (
-          <motion.div
+          <div
             key={lang.name}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.05 }}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -86,19 +79,16 @@ export function LanguageChart({
               </span>
             </div>
 
-            <motion.div
+            <div
               className="h-2 rounded-full overflow-hidden"
               style={{ background: "rgba(99,179,237,0.1)" }}
             >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${lang.percentage}%` }}
-                transition={{ delay: idx * 0.1, duration: 0.8, ease: "easeOut" }}
+              <div
                 className="h-full rounded-full"
-                style={{ background: lang.color }}
+                style={{ background: lang.color, width: `${lang.percentage}%` }}
               />
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -107,6 +97,6 @@ export function LanguageChart({
           Total: {sorted.reduce((acc, l) => acc + l.bytes, 0).toLocaleString()} bytes
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 }

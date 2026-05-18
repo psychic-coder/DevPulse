@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useMemo } from "react";
 
 interface CommitItem {
@@ -63,9 +62,7 @@ export function ContributionGraph({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className="rounded-xl p-6"
       style={{
         background: "var(--bg-surface)",
@@ -84,11 +81,10 @@ export function ContributionGraph({
                 const idx = weekIdx * days + dayIdx;
                 const cell = grid[idx] || { date: '', count: 0 };
                 return (
-                  <motion.div
+                  <div
                     key={`${weekIdx}-${dayIdx}`}
                     className={`w-3 h-3 rounded-sm ${getColor(cell.count)} transition-colors cursor-pointer hover:ring-1 hover:ring-blue-400`}
                     title={`${cell.count} contributions on ${cell.date}`}
-                    whileHover={{ scale: 1.2 }}
                   />
                 );
               })}
@@ -100,6 +96,6 @@ export function ContributionGraph({
       <p className="text-xs mt-4" style={{ color: 'var(--text-dim)' }}>
         Darker = More contributions
       </p>
-    </motion.div>
+    </div>
   );
 }

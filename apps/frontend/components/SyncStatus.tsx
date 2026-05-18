@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 interface SyncInfo {
   lastSync: string | null;
   nextScheduled: string | null;
@@ -65,9 +63,7 @@ export function SyncStatus({
   const colors = getStatusColor(info.status);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className={`rounded-xl p-6 ${colors.bg}`}
       style={{
         background: "rgba(99,179,237,0.03)",
@@ -77,13 +73,7 @@ export function SyncStatus({
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <motion.div
-              animate={
-                info.status === "syncing"
-                  ? { scale: [1, 1.2, 1] }
-                  : { scale: 1 }
-              }
-              transition={{ duration: 2, repeat: Infinity }}
+            <div
               className="w-2 h-2 rounded-full"
               style={{ background: colors.dot }}
             />
@@ -159,6 +149,6 @@ export function SyncStatus({
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }

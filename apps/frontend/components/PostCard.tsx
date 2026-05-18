@@ -1,5 +1,3 @@
-import { motion } from "framer-motion";
-
 export default function PostCard({
   title,
   content,
@@ -8,12 +6,7 @@ export default function PostCard({
   content: string;
 }) {
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-    >
+    <div>
       <article className="card p-6 group cursor-pointer">
         {/* inner glow border on hover */}
         <div
@@ -71,6 +64,6 @@ export default function PostCard({
           </p>
         </div>
       </article>
-    </motion.div>
+    </div>
   );
 }
