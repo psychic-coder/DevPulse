@@ -31,6 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
+  // Attempt a silent refresh on mount if no access token is present.
+  // This allows restoring a session using the httpOnly refresh cookie after a full page reload.
+  React.useEffect(() => {
+    if (!token) {
+      trySilentRefresh();
+    }
+    // only run once on mount or when token changes to null
+  }, [token]);
+
   // Handle OAuth callback from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -56,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = () => {
-    window.location.href = "http://localhost:3000/auth/github";
+    window.location.href = "/auth/github";
   };
 
   const logout = () => {
@@ -85,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refreshAccessToken() {
     try {
-      const res = await fetch('http://localhost:3000/auth/refresh', {
+      const res = await fetch('/auth/refresh', {
         method: 'POST',
         credentials: 'include',
       });
@@ -106,8 +115,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('no access token returned');
     } catch (e) {
       console.error('refreshAccessToken error', e);
-      logout();
+      // do not force logout here; let callers decide how to handle failure
       throw e;
+    }
+  }
+
+  // Try a silent refresh without forcing a logout on failure.
+  async function trySilentRefresh(): Promise<string | null> {
+    try {
+      const res = await fetch('/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.accessToken) {
+        localStorage.setItem('authToken', data.accessToken);
+        setToken(data.accessToken);
+        const payload = parseJwtPayload(data.accessToken);
+        if (payload) {
+          const userData = { id: payload.sub, githubUsername: payload.githubUsername };
+          localStorage.setItem('authUser', JSON.stringify(userData));
+          setUser(userData);
+        }
+        return data.accessToken as string;
+      }
+      return null;
+    } catch (e) {
+      console.debug('silent refresh failed', e);
+      return null;
     }
   }
 
