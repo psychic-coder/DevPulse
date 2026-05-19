@@ -1,7 +1,20 @@
 export function parseJwtPayload(token: string | null) {
   if (!token) return null;
   try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf8'));
+    const b64 = token.split('.')[1] || '';
+    let json = '';
+    if (typeof window !== 'undefined' && typeof atob === 'function') {
+      // Browser environment
+      json = decodeURIComponent(
+        Array.prototype.map
+          .call(atob(b64), (c: string) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+    } else {
+      // Node.js / test environment
+      json = Buffer.from(b64, 'base64').toString('utf8');
+    }
+    const payload = JSON.parse(json);
     return payload as any;
   } catch (e) {
     return null;

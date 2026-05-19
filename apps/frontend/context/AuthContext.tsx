@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import { parseJwtPayload, isTokenExpiringSoon } from "../utils/authHelpers";
 
 type User = { id: string; githubUsername: string };
 
@@ -101,22 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  function parseJwtPayload(t: string | null) {
-    if (!t) return null;
-    try {
-      const payload = JSON.parse(atob(t.split('.')[1]));
-      return payload as any;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function isTokenExpiringSoon(t: string | null, bufferSeconds = 30) {
-    const p = parseJwtPayload(t);
-    if (!p || !p.exp) return true;
-    const expMs = p.exp * 1000;
-    return Date.now() + bufferSeconds * 1000 >= expMs;
-  }
+  // Using shared helpers from utils/authHelpers.ts
 
   async function refreshAccessToken() {
     try {
