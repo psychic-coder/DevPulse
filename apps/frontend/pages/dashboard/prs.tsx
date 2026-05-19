@@ -16,7 +16,7 @@ export default function DashboardPrsPage() {
     const scores = pullRequests.map((pr) => pr.prScore).filter((score): score is number => typeof score === "number");
     if (scores.length === 0) return { average: "--", scored: 0 };
     return {
-      average: `${Math.round((scores.reduce((sum, score) => sum + score, 0) / scores.length) * 100)}/100`,
+      average: `${(scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1)}/10`,
       scored: scores.length,
     };
   }, [pullRequests]);

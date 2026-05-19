@@ -18,68 +18,71 @@ import { Repository } from './repository.entity';
 @Index(['createdAt'])
 export class PullRequest {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'user_id', type: 'uuid' })
-  userId: string;
+  userId!: string;
 
   @ManyToOne(() => User, (user) => user.pullRequests, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user!: User;
 
   @Column({ name: 'repository_id', type: 'uuid' })
-  repositoryId: string;
+  repositoryId!: string;
 
   @ManyToOne(() => Repository, (repo) => repo.pullRequests, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'repository_id' })
-  repository: Repository;
+  repository!: Repository;
 
   @Column({ name: 'github_pr_id', type: 'bigint' })
-  githubPrId: number;
+  githubPrId!: number;
 
   @Column({ type: 'varchar' })
-  title: string;
+  title!: string;
 
   @Column({ type: 'text', nullable: true })
-  body: string;
+  body!: string;
 
   @Column({ type: 'varchar' })
-  state: string; // 'open' | 'closed' | 'merged'
+  state!: string; // 'open' | 'closed' | 'merged'
 
   @Column({ type: 'varchar', nullable: true })
-  author: string;
+  author!: string;
 
   @Column({ name: 'created_at', type: 'timestamp' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column({ name: 'merged_at', type: 'timestamp', nullable: true })
-  mergedAt: Date | null;
+  mergedAt!: Date | null;
 
   @Column({ name: 'closed_at', type: 'timestamp', nullable: true })
-  closedAt: Date | null;
+  closedAt!: Date | null;
 
   @Column({ type: 'int', default: 0 })
-  additions: number;
+  additions!: number;
 
   @Column({ type: 'int', default: 0 })
-  deletions: number;
+  deletions!: number;
 
   @Column({ name: 'changed_files', type: 'int', default: 0 })
-  changedFiles: number;
+  changedFiles!: number;
 
   @Column({ name: 'comments_count', type: 'int', default: 0 })
-  commentsCount: number;
+  commentsCount!: number;
 
   @Column({ name: 'commits_count', type: 'int', default: 0 })
-  commitsCount: number;
+  commitsCount!: number;
 
   @Column({ name: 'pr_score', type: 'float', nullable: true })
-  prScore: number;
+  prScore!: number;
+
+  @Column({ name: 'pr_score_reason', type: 'text', nullable: true })
+  prScoreReason!: string | null;
 
   @Column({ name: 'synced_at', type: 'timestamp', default: () => 'now()' })
-  syncedAt: Date;
+  syncedAt!: Date;
 }

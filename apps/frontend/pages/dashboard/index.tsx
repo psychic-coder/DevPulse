@@ -106,7 +106,7 @@ export default function DashboardIndexPage() {
     }));
   }, [commits.length, languageBreakdown, repositories]);
 
-  const averageScore = Math.round(prScoreAverage * 100);
+  const averageScore = Number.isFinite(prScoreAverage) ? prScoreAverage.toFixed(1) : null;
   const todayKey = toUtcDayKey(new Date());
   const todayRepoCount = new Set(commits.filter((commit) => toUtcDayKey(new Date(commit.date)) === todayKey).map((commit) => commit.repo)).size;
 
@@ -139,7 +139,7 @@ export default function DashboardIndexPage() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
               <QuickStat label="Today\'s commits" value={<AnimatedNumber value={todayCommitCount} />} hint={`${todayRepoCount} repositories touched today`} />
-              <QuickStat label="Average PR score" value={averageScore ? `${averageScore}/100` : "--"} hint="AI review quality across recent PRs" />
+              <QuickStat label="Average PR score" value={averageScore ? `${averageScore}/10` : "--"} hint="AI review quality across recent PRs" />
               <QuickStat label="Total commits" value={<AnimatedNumber value={stats?.commits ?? commits.length} />} hint="Synced from GitHub" />
               <QuickStat label="Repositories" value={<AnimatedNumber value={stats?.repositories ?? repositories.length} />} hint="Tracked repos in your workspace" />
             </div>

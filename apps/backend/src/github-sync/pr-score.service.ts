@@ -15,32 +15,39 @@ export class PrScoreService {
   ) {}
 
   async scorePullRequest(pr: PullRequest): Promise<number | null> {
-    // Build prompt for PR quality scoring
-    const prompt = `You are an assistant that scores GitHub pull requests on code quality and reviewability.\n\nRespond with a single JSON object only. Example: {"score": 0.87, "reason": "Concise explanation"}\n\nPull Request Title: ${pr.title}\nPull Request Body: ${pr.body || ''}\nFiles changed: ${pr.changedFiles || 0}\nAdditions: ${pr.additions || 0}\nDeletions: ${pr.deletions || 0}\nComments: ${pr.commentsCount || 0}\nCommits: ${pr.commitsCount || 0}\n\nProvide score between 0.0 and 1.0 (higher is better). Give one-sentence reason.`;
+    const prompt = `You are a senior software engineer reviewing PR quality.
+
+Score this pull request from 1-10 based on:
+- Title clarity (is it specific and descriptive?)
+- Body completeness (does it explain what, why, and how?)
+- Professionalism (proper formatting, no vague descriptions)
+- Whether the description matches what a typical diff would contain
+
+PR Title: ${pr.title}
+PR Body: ${pr.body || ''}
+
+Respond ONLY with valid JSON:
+{ "score": 7.5, "reason": "one sentence explanation" }`;
 
     const content = await this.aiService.generateText(prompt);
     if (!content) return null;
 
     try {
-      // Try to extract JSON substring
       const match = content.match(/\{[\s\S]*\}/);
       const jsonStr = match ? match[0] : content;
       const obj = JSON.parse(jsonStr);
       const score = Number(obj.score ?? obj.scoreValue ?? obj.pr_score ?? null);
-      const reason = obj.reason || obj.explanation || null;
+      const reason = typeof obj.reason === 'string' ? obj.reason : typeof obj.explanation === 'string' ? obj.explanation : null;
 
-      if (!isNaN(score)) {
-        pr.prScore = score;
-        // try to save a reason if column exists
-        try {
-          // @ts-ignore optional column
-          pr.prScoreReason = reason;
-        } catch (e) {}
+      if (!Number.isNaN(score)) {
+        pr.prScore = Math.max(1, Math.min(10, score));
+        pr.prScoreReason = reason;
         await this.prRepo.save(pr);
-        return score;
+        return pr.prScore;
       }
     } catch (e) {
-      this.logger.warn('Failed to parse PR score response: ' + e.message);
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      this.logger.warn('Failed to parse PR score response: ' + errorMessage);
     }
 
     return null;

@@ -426,14 +426,29 @@ export class GithubSyncService {
       this.usersService.findById(userId),
     ]);
 
+    const stalePullRequests = pullRequests.filter(
+      (pr) => !pr.prScoreReason || !pr.prScore || pr.prScore <= 0,
+    );
+
+    if (stalePullRequests.length > 0) {
+      await Promise.allSettled(
+        stalePullRequests.map((pr) => this.prScoreService.scorePullRequest(pr)),
+      );
+    }
+
+    const refreshedPullRequests =
+      stalePullRequests.length > 0
+        ? await this.pullRequestRepo.find({ where: { userId } })
+        : pullRequests;
+
     return {
       repositories,
       commits,
-      pullRequests,
+      pullRequests: refreshedPullRequests,
       summary: {
         totalRepositories: repositories.length,
         totalCommits: commits.length,
-        totalPullRequests: pullRequests.length,
+        totalPullRequests: refreshedPullRequests.length,
         lastSyncedAt: (user as any)?.lastSyncedAt ?? null,
       },
     };
