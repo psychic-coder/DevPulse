@@ -348,7 +348,11 @@ export class GithubSyncService {
     });
 
     if (existingPr) {
+      existingPr.title = pr.title;
+      existingPr.body = pr.body || null;
       existingPr.state = pr.state;
+      existingPr.author = pr.user?.login || existingPr.author;
+      existingPr.url = pr.html_url || pr.url || existingPr.url;
       existingPr.mergedAt = pr.merged_at ? new Date(pr.merged_at) : null;
       existingPr.closedAt = pr.closed_at ? new Date(pr.closed_at) : null;
       existingPr.additions = pr.additions || 0;
@@ -380,6 +384,7 @@ export class GithubSyncService {
         body: pr.body || null,
         state: pr.state,
         author: pr.user?.login || null,
+        url: pr.html_url || pr.url || null,
         createdAt: new Date(pr.created_at),
         mergedAt: pr.merged_at ? new Date(pr.merged_at) : null,
         closedAt: pr.closed_at ? new Date(pr.closed_at) : null,

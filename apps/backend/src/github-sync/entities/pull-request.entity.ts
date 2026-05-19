@@ -53,6 +53,9 @@ export class PullRequest {
   @Column({ type: 'varchar', nullable: true })
   author!: string;
 
+  @Column({ type: 'text', nullable: true })
+  url!: string | null;
+
   @Column({ name: 'created_at', type: 'timestamp' })
   createdAt!: Date;
 

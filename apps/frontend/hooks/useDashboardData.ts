@@ -200,19 +200,32 @@ export function useDashboardData() {
       });
 
       const repoPrCounts = new Map<string, number>();
-      const pullRequests = (syncData?.pullRequests ?? []).map((pr: any) => ({
+      const pullRequests = (syncData?.pullRequests ?? []).map((pr: any) => {
+        const repoName = pr.repository?.name || pr.repositoryName || "unknown";
+        const prNumber = pr.githubPrId ?? pr.github_pr_id ?? null;
+        const fallbackUrl =
+          !pr.url &&
+          !pr.html_url &&
+          prNumber &&
+          user?.githubUsername &&
+          repoName !== "unknown"
+            ? `https://github.com/${user.githubUsername}/${repoName}/pull/${prNumber}`
+            : null;
+
+        return {
         id: String(pr.id ?? pr.githubPrId ?? pr.github_pr_id),
         title: pr.title,
         state: (pr.state ?? "open") as "open" | "closed" | "merged",
-        repo: pr.repository?.name || pr.repositoryName || "unknown",
+        repo: repoName,
         created_at: pr.createdAt || pr.created_at || new Date().toISOString(),
-        url: pr.url || pr.html_url || "#",
+        url: pr.url || pr.html_url || fallbackUrl || "#",
         prScore: pr.prScore ?? pr.pr_score ?? null,
         prScoreReason: pr.prScoreReason ?? pr.pr_score_reason ?? null,
         additions: pr.additions ?? 0,
         deletions: pr.deletions ?? 0,
         changedFiles: pr.changedFiles ?? pr.changed_files ?? 0,
-      }));
+        };
+      });
 
       pullRequests.forEach((pr) => {
         repoPrCounts.set(pr.repo, (repoPrCounts.get(pr.repo) ?? 0) + 1);
@@ -240,7 +253,7 @@ export function useDashboardData() {
       console.error("Failed to load dashboard data:", error);
       setState((current) => ({ ...current, loading: false, syncing: false }));
     }
-  }, [fetchWithAuth, user?.id]);
+  }, [fetchWithAuth, user?.githubUsername, user?.id]);
 
   useEffect(() => {
     loadDashboard();
