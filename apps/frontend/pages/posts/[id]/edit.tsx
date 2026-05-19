@@ -23,7 +23,7 @@ export default function EditPostPage() {
       })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, fetchWithAuth]);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();

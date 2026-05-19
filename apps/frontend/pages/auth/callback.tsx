@@ -34,6 +34,17 @@ export default function AuthCallback() {
         })
       );
 
+      // Notify the app (same-window) that auth happened so providers can update immediately
+      try {
+        window.dispatchEvent(
+          new CustomEvent("devpulse:auth", {
+            detail: { accessToken, refreshToken },
+          }),
+        );
+      } catch (e) {
+        // ignore in older browsers
+      }
+
       console.log("Tokens stored, redirecting to dashboard");
 
       // Redirect to dashboard

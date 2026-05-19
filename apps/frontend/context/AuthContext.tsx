@@ -64,6 +64,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Listen for same-window auth events (dispatched by the auth callback)
+  useEffect(() => {
+    function onAuthEvent(e: Event) {
+      try {
+        const detail = (e as CustomEvent)?.detail || {};
+        const accessToken = detail.accessToken as string | undefined;
+        const refreshToken = detail.refreshToken as string | undefined;
+        if (!accessToken) return;
+        localStorage.setItem('authToken', accessToken);
+        if (refreshToken) localStorage.setItem('authRefreshToken', refreshToken);
+        setToken(accessToken);
+        const payload = parseJwtPayload(accessToken);
+        if (payload) {
+          const userData = { id: payload.sub, githubUsername: payload.githubUsername };
+          localStorage.setItem('authUser', JSON.stringify(userData));
+          setUser(userData);
+        }
+      } catch (err) {
+        console.error('onAuthEvent error', err);
+      }
+    }
+
+    window.addEventListener('devpulse:auth', onAuthEvent as EventListener);
+    return () => window.removeEventListener('devpulse:auth', onAuthEvent as EventListener);
+  }, []);
+
   const login = () => {
     window.location.href = "/auth/github";
   };

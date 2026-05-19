@@ -94,7 +94,7 @@ export default function Home() {
       .then((data) => setPosts(Array.isArray(data) ? data : []))
       .catch(() => setPosts([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [fetchWithAuth]);
 
   return (
     <>

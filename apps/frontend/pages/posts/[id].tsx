@@ -70,7 +70,7 @@ export default function PostDetail() {
         setComments([]);
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, fetchWithAuth]);
 
   if (loading)
     return (
