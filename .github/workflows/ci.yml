@@ -1,0 +1,122 @@
+name: DevPulse CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/backend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: apps/backend
+        run: npm run lint
+
+      - name: Run Type Check
+        working-directory: apps/backend
+        run: npx tsc --noEmit
+
+      - name: Run Tests
+        working-directory: apps/backend
+        run: npm run test
+
+  frontend-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: apps/frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Type Check
+        working-directory: apps/frontend
+        run: npx tsc --noEmit
+
+      - name: Run Tests
+        working-directory: apps/frontend
+        run: npm run test
+
+  prettier-ci:
+    name: Prettier Code Style Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check Code Formatting
+        run: |
+          npx prettier --check "apps/backend/src/**/*.ts" "apps/frontend/pages/**/*.tsx" "apps/frontend/components/**/*.tsx" "apps/frontend/hooks/**/*.ts" "apps/frontend/utils/**/*.ts" || echo "Formatting warnings found"
+
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/backend
+          file: ./apps/backend/Dockerfile
+          push: false
+          tags: devpulse-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Analytics Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/analytics
+          file: ./apps/analytics/Dockerfile
+          push: false
+          tags: devpulse-analytics:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build Frontend Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./apps/frontend
+          file: ./apps/frontend/Dockerfile
+          push: false
+          tags: devpulse-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

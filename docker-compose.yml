@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: devpulse
+      POSTGRES_USER: devpulse
+      POSTGRES_PASSWORD: devpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./apps/backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://devpulse:devpulse@postgres:5432/devpulse
+      REDIS_URL: redis://redis:6379
+      ANALYTICS_SERVICE_URL: http://analytics:5001
+
+  analytics:
+    build: ./apps/analytics
+    ports:
+      - "5001:5001"
+
+  frontend:
+    build: ./apps/frontend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    environment:
+      PORT: 3001
+      BACKEND_URL: http://backend:3000
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:3000
+
+volumes:
+  postgres_data:
