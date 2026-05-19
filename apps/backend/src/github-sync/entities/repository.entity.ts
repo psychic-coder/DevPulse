@@ -20,7 +20,7 @@ export class Repository {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', type: 'uuid', insert: false, update: false })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.repositories, {

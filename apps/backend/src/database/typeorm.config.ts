@@ -6,11 +6,12 @@ import { Commit } from '../github-sync/entities/commit.entity';
 import { PullRequest } from '../github-sync/entities/pull-request.entity';
 import { Post } from '../posts/entities/post.entity';
 import { Comment } from '../comments/entities/comment.entity';
+import { Digest } from '../digests/entities/digest.entity';
 
 export const createTypeOrmOptions = (): TypeOrmModuleOptions => ({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [User, Repository, Commit, PullRequest, Post, Comment],
+  entities: [User, Repository, Commit, PullRequest, Post, Comment, Digest],
   migrations: [join(__dirname, './migrations/*{.ts,.js}')],
   migrationsRun: true,
   synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',

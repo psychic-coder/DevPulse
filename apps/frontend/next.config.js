@@ -4,8 +4,12 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/auth/:path*',
+        source: '/auth/:path((?!callback).*)',
         destination: 'http://localhost:3000/auth/:path*',
+      },
+      {
+        source: '/digests/:path*',
+        destination: 'http://localhost:3000/digests/:path*',
       },
       {
         source: '/sync/:path*',
@@ -26,6 +30,10 @@ const nextConfig = {
       {
         source: '/github-sync/:path*',
         destination: 'http://localhost:3000/github-sync/:path*',
+      },
+      {
+        source: '/digests/:path*',
+        destination: 'http://localhost:3000/digests/:path*',
       },
     ];
   },

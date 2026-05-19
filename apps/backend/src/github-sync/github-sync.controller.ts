@@ -1,4 +1,4 @@
-import { Controller, Post, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, UseGuards, Logger } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
@@ -8,21 +8,28 @@ import { GithubSyncCronService } from './github-sync-cron.service';
 @Controller('sync')
 @UseGuards(JwtAuthGuard)
 export class GithubSyncController {
+  private readonly logger = new Logger(GithubSyncController.name);
+
   constructor(
     private readonly githubSyncService: GithubSyncService,
     private readonly githubSyncCronService: GithubSyncCronService,
   ) {}
 
   /**
-   * Manual trigger to sync GitHub data for the authenticated user
+   * Manual trigger to sync GitHub data for the authenticated user.
+   * Responds immediately with 202 and runs sync in the background
+   * to avoid proxy timeouts on long-running GitHub API calls.
    */
   @Post('github')
   async syncGithubData(@CurrentUser() user: { sub: string }) {
-    const result = await this.githubSyncService.syncUserData(user.sub);
+    // Fire-and-forget: start sync without awaiting to prevent ECONNRESET
+    this.githubSyncService.syncUserData(user.sub).catch((err) => {
+      this.logger.error(`Background sync failed for user ${user.sub}: ${err.message}`);
+    });
+
     return {
       success: true,
-      message: 'GitHub data synced successfully',
-      data: result,
+      message: 'GitHub sync started in background. Listen to realtime events for progress.',
     };
   }
 
@@ -31,11 +38,8 @@ export class GithubSyncController {
    */
   @Get('github/streaks')
   async getGithubStreaks(@CurrentUser() user: { sub: string }) {
-    const data = await this.githubSyncService.getUserStreaks(user.sub);
-    return {
-      success: true,
-      data,
-    };
+    // Return directly (no wrapper) so frontend can destructure currentStreak etc. immediately
+    return this.githubSyncService.getUserStreaks(user.sub);
   }
 
   /**

@@ -144,16 +144,27 @@ export function useDashboardData() {
         ? await toJson<UserStats>(statsResponse.value)
         : null;
 
-      const syncData = syncResponse.status === "fulfilled" && syncResponse.value.ok
+      // GET /sync/github returns { success, data: { repositories, commits, pullRequests, summary } }
+      const syncEnvelope = syncResponse.status === "fulfilled" && syncResponse.value.ok
         ? await toJson<any>(syncResponse.value)
         : null;
+      const syncData = syncEnvelope?.data ?? syncEnvelope ?? null;
 
+      // GET /sync/github/streaks returns flat { currentStreak, longestStreak, lastCommitDate }
       const streakData = streaksResponse.status === "fulfilled" && streaksResponse.value.ok
         ? await toJson<Streaks>(streaksResponse.value)
         : defaultStreaks;
 
-      const analyticsData = analyticsResponse.status === "fulfilled" && analyticsResponse.value.ok
-        ? await toJson<DashboardAnalytics>(analyticsResponse.value)
+      // GET /analytics/me returns { commits, languages, lastUpdated }
+      const analyticsEnvelope = analyticsResponse.status === "fulfilled" && analyticsResponse.value.ok
+        ? await toJson<any>(analyticsResponse.value)
+        : null;
+      const analyticsData: DashboardAnalytics | null = analyticsEnvelope
+        ? {
+            commits: analyticsEnvelope.commits,
+            languages: analyticsEnvelope.languages,
+            lastUpdated: analyticsEnvelope.lastUpdated,
+          }
         : null;
 
       const digestData = digestResponse.status === "fulfilled" && digestResponse.value.ok
@@ -220,7 +231,7 @@ export function useDashboardData() {
         repositories: mappedRepositories,
         commits,
         pullRequests,
-        streaks: streakData,
+        streaks: streakData ?? defaultStreaks,
         analytics: analyticsData,
         digest: digestData,
         lastSyncedAt: syncData?.summary?.lastSyncedAt ?? null,
@@ -240,12 +251,15 @@ export function useDashboardData() {
 
     setState((current) => ({ ...current, syncing: true }));
     try {
-      const response = await fetchWithAuth("/sync/github", { method: "POST" });
-      if (!response.ok) {
-        throw new Error("Sync failed");
-      }
-      await loadDashboard();
-    } finally {
+      // POST /sync/github now responds immediately (202) and runs sync in background
+      await fetchWithAuth("/sync/github", { method: "POST" });
+      // Poll for updated data after a short delay to allow background sync to complete
+      setTimeout(() => {
+        loadDashboard().finally(() => {
+          setState((current) => ({ ...current, syncing: false }));
+        });
+      }, 5000);
+    } catch {
       setState((current) => ({ ...current, syncing: false }));
     }
   }, [fetchWithAuth, loadDashboard, user?.id]);

@@ -1,20 +1,29 @@
-import { Controller, Get, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { DigestsService } from './digests.service';
-import type { Request } from 'express';
+import { JwtAuthGuard } from '../common/guards/jwt.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Post, Param } from '@nestjs/common';
+import { Public } from '../common/decorators/public.decorator';
 
 @Controller('digests')
+@UseGuards(JwtAuthGuard)
 export class DigestsController {
   constructor(private readonly digestsService: DigestsService) {}
 
   @Get('me')
-  async getMyDigests(@Req() req: Request) {
-    const user = (req as any).user;
-    if (!user || !user.id) throw new UnauthorizedException();
+  async getMyDigests(@CurrentUser() user: { sub: string }) {
+    return this.digestsService.generateWeeklyDigestForUser(user.sub);
+  }
 
-    // return last 5 digests for the user
-    // repository access via service not yet implemented; fallback to generate on demand
-    // For now, return generation result for latest week
-    const digest = await this.digestsService.generateWeeklyDigestForUser(user.id);
-    return digest;
+  // Temporary admin endpoint to trigger digest generation for a given user id
+  @Public()
+  @Post('admin/generate/:userId')
+  async generateForUser(@Param('userId') userId: string) {
+    try {
+      const result = await this.digestsService.generateWeeklyDigestForUser(userId);
+      return { success: true, data: result };
+    } catch (e) {
+      return { success: false, error: e?.message ?? String(e) };
+    }
   }
 }

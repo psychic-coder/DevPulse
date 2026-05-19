@@ -20,7 +20,7 @@ export class PullRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', type: 'uuid', insert: false, update: false })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.pullRequests, {
@@ -29,7 +29,7 @@ export class PullRequest {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'repository_id', type: 'uuid', insert: false, update: false })
+  @Column({ name: 'repository_id', type: 'uuid' })
   repositoryId: string;
 
   @ManyToOne(() => Repository, (repo) => repo.pullRequests, {
