@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Query, Req, Res, UseGuards, Logger } from '@nestjs/common';
-import type { Response } from 'express';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+  Logger,
+} from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
@@ -42,12 +51,15 @@ export class AuthController {
   @UseGuards(JwtRefreshAuthGuard)
   @Post('refresh')
   async refresh(
-    @Req() req: any,
+    @Req() req: Request,
     @CurrentUser() payload: { sub: string; githubUsername: string },
     @Res() res: Response,
   ) {
     this.logger.debug(`Refresh endpoint reached for user: ${payload.sub}`);
-    this.logger.debug(`Refresh token in body: ${req.body?.refreshToken ? 'yes' : 'no'}`);
+    const body = req.body as Record<string, unknown>;
+    this.logger.debug(
+      `Refresh token in body: ${body?.refreshToken ? 'yes' : 'no'}`,
+    );
 
     const result = await this.authService.refreshAccessToken(payload);
 

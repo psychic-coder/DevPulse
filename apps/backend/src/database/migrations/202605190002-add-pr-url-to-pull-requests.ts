@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddPrUrlToPullRequests1779162000000
-  implements MigrationInterface
-{
+export class AddPrUrlToPullRequests1779162000000 implements MigrationInterface {
   name = 'AddPrUrlToPullRequests1779162000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

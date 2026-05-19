@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddPrScoreReasonToPullRequests1779158400000
-  implements MigrationInterface
-{
+export class AddPrScoreReasonToPullRequests1779158400000 implements MigrationInterface {
   name = 'AddPrScoreReasonToPullRequests1779158400000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

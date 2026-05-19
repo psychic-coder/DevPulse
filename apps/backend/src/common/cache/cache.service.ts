@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -88,7 +93,10 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       if (!value) return null;
       return JSON.parse(value) as T;
     } catch (error) {
-      this.logger.warn(`Failed to get cache key ${key}:`, error.message);
+      this.logger.warn(
+        `Failed to get cache key ${key}:`,
+        error instanceof Error ? error.message : String(error),
+      );
       return null;
     }
   }
@@ -107,7 +115,10 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       await this.redisClient.setex(key, ttlSeconds, JSON.stringify(value));
       return true;
     } catch (error) {
-      this.logger.warn(`Failed to set cache key ${key}:`, error.message);
+      this.logger.warn(
+        `Failed to set cache key ${key}:`,
+        error instanceof Error ? error.message : String(error),
+      );
       return false;
     }
   }
@@ -122,7 +133,10 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       await this.redisClient.del(key);
       return true;
     } catch (error) {
-      this.logger.warn(`Failed to delete cache key ${key}:`, error.message);
+      this.logger.warn(
+        `Failed to delete cache key ${key}:`,
+        error instanceof Error ? error.message : String(error),
+      );
       return false;
     }
   }
@@ -139,7 +153,10 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
       const deleted = await this.redisClient.del(...keys);
       return deleted;
     } catch (error) {
-      this.logger.warn(`Failed to delete pattern ${pattern}:`, error.message);
+      this.logger.warn(
+        `Failed to delete pattern ${pattern}:`,
+        error instanceof Error ? error.message : String(error),
+      );
       return 0;
     }
   }
@@ -163,9 +180,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   /**
    * Get cached GitHub rate limit
    */
-  async getRateLimit(
-    token: string,
-  ): Promise<{
+  async getRateLimit(token: string): Promise<{
     limit: number;
     remaining: number;
     reset: number;
@@ -178,10 +193,7 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   /**
    * Cache repositories list
    */
-  async setRepositories(
-    userId: string,
-    repos: any[],
-  ): Promise<void> {
+  async setRepositories(userId: string, repos: any[]): Promise<void> {
     const key = `gh:repos:${userId}`;
     await this.set(key, repos, this.REPOS_TTL);
   }
@@ -229,7 +241,10 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
   /**
    * Get cached pull requests
    */
-  async getPullRequests(userId: string, repoName: string): Promise<any[] | null> {
+  async getPullRequests(
+    userId: string,
+    repoName: string,
+  ): Promise<any[] | null> {
     const key = `gh:prs:${userId}:${repoName}`;
     return this.get(key);
   }

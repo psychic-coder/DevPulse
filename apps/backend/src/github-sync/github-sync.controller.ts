@@ -21,15 +21,18 @@ export class GithubSyncController {
    * to avoid proxy timeouts on long-running GitHub API calls.
    */
   @Post('github')
-  async syncGithubData(@CurrentUser() user: { sub: string }) {
+  syncGithubData(@CurrentUser() user: { sub: string }) {
     // Fire-and-forget: start sync without awaiting to prevent ECONNRESET
     this.githubSyncService.syncUserData(user.sub).catch((err) => {
-      this.logger.error(`Background sync failed for user ${user.sub}: ${err.message}`);
+      this.logger.error(
+        `Background sync failed for user ${user.sub}: ${err instanceof Error ? err.message : String(err)}`,
+      );
     });
 
     return {
       success: true,
-      message: 'GitHub sync started in background. Listen to realtime events for progress.',
+      message:
+        'GitHub sync started in background. Listen to realtime events for progress.',
     };
   }
 

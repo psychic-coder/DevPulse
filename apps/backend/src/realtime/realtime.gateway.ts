@@ -5,7 +5,7 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
 } from '@nestjs/websockets';
-import { Logger, UnauthorizedException } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,7 +21,9 @@ interface AuthenticatedSocket extends Socket {
   },
   namespace: '/realtime',
 })
-export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class RealtimeGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -44,11 +46,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
       const payload = this.jwtService.verify(token, {
         secret: this.configService.get<string>('JWT_SECRET'),
-      });
+      }) as unknown as { sub: string };
 
       socket.userId = payload.sub;
       const roomName = `room:${payload.sub}`;
-      socket.join(roomName);
+      await socket.join(roomName);
 
       // Track user sockets
       if (!this.userSockets.has(payload.sub)) {
@@ -61,7 +63,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
 
       this.logger.log(`User ${payload.sub} connected (socket: ${socket.id})`);
     } catch (error) {
-      this.logger.error(`Connection authentication failed: ${error.message}`);
+      this.logger.error(
+        `Connection authentication failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       socket.disconnect();
     }
   }
@@ -75,7 +79,9 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
           this.userSockets.delete(socket.userId);
         }
       }
-      this.logger.log(`User ${socket.userId} disconnected (socket: ${socket.id})`);
+      this.logger.log(
+        `User ${socket.userId} disconnected (socket: ${socket.id})`,
+      );
     }
   }
 
@@ -105,41 +111,50 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   /**
    * Emit new_commit event
    */
-  emitNewCommit(userId: string, data: {
-    sha: string;
-    message: string;
-    repo: string;
-    committed_at: string;
-    additions?: number;
-    deletions?: number;
-  }): void {
+  emitNewCommit(
+    userId: string,
+    data: {
+      sha: string;
+      message: string;
+      repo: string;
+      committed_at: string;
+      additions?: number;
+      deletions?: number;
+    },
+  ): void {
     this.emitToUser(userId, 'new_commit', data);
   }
 
   /**
    * Emit new_pr event
    */
-  emitNewPR(userId: string, data: {
-    id: string;
-    title: string;
-    state: 'open' | 'closed' | 'merged';
-    repo: string;
-    created_at: string;
-    url?: string;
-  }): void {
+  emitNewPR(
+    userId: string,
+    data: {
+      id: string;
+      title: string;
+      state: 'open' | 'closed' | 'merged';
+      repo: string;
+      created_at: string;
+      url?: string;
+    },
+  ): void {
     this.emitToUser(userId, 'new_pr', data);
   }
 
   /**
    * Emit sync_complete event
    */
-  emitSyncComplete(userId: string, data: {
-    totalCommits: number;
-    totalPRs: number;
-    syncedAt: Date;
-    newCommits?: number;
-    newPRs?: number;
-  }): void {
+  emitSyncComplete(
+    userId: string,
+    data: {
+      totalCommits: number;
+      totalPRs: number;
+      syncedAt: Date;
+      newCommits?: number;
+      newPRs?: number;
+    },
+  ): void {
     this.emitToUser(userId, 'sync_complete', {
       ...data,
       syncedAt: data.syncedAt.toISOString(),

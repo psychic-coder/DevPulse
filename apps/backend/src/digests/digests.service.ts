@@ -6,6 +6,25 @@ import { UsersService } from '../users/users.service';
 import { GithubSyncService } from '../github-sync/github-sync.service';
 import { AiService } from '../shared/ai.service';
 
+interface SyncCommit {
+  repositoryName?: string;
+  repository?: { name?: string };
+  committedAt?: string;
+  createdAt?: string;
+  additions?: number;
+  deletions?: number;
+}
+
+interface SyncPullRequest {
+  mergedAt?: string;
+  state?: string;
+}
+
+interface SyncRepository {
+  language?: string;
+  userId?: string;
+}
+
 @Injectable()
 export class DigestsService {
   private readonly logger = new Logger(DigestsService.name);
@@ -18,14 +37,30 @@ export class DigestsService {
     private readonly aiService: AiService,
   ) {}
 
-  async createDigestForUser(userId: string, weekStart: string, content: string, rawStats: any) {
-    const d = this.digestRepo.create({ user: { id: userId } as any, weekStart, content, rawStats });
+  async createDigestForUser(
+    userId: string,
+    weekStart: string,
+    content: string,
+    rawStats: Record<string, unknown>,
+  ) {
+    const d = this.digestRepo.create({
+      user: { id: userId },
+      weekStart,
+      content,
+      rawStats,
+    });
     return this.digestRepo.save(d);
   }
 
   async generateWeeklyDigestForUser(userId: string) {
     this.logger.log(`Generating weekly digest for user ${userId}`);
-    const data = await this.githubSyncService.getUserData(userId);
+    const data = (await this.githubSyncService.getUserData(
+      userId,
+    )) as unknown as {
+      commits?: SyncCommit[];
+      pullRequests?: SyncPullRequest[];
+      repositories?: SyncRepository[];
+    };
     // compute stats for last 7 days from data.commits and data.pullRequests
     const now = new Date();
     const weekStartDate = new Date(now);
@@ -37,7 +72,11 @@ export class DigestsService {
     const prs = data.pullRequests || [];
 
     const totalCommits = commits.length;
-    const repoSet = new Set(commits.map((c: any) => c.repository?.name || c.repositoryName || 'unknown'));
+    const repoSet = new Set(
+      commits.map(
+        (c: SyncCommit) => c.repository?.name || c.repositoryName || 'unknown',
+      ),
+    );
     const repoList = Array.from(repoSet).join(', ');
 
     // peak day/hour and additions/deletions
@@ -46,7 +85,9 @@ export class DigestsService {
     let additions = 0;
     let deletions = 0;
     for (const c of commits) {
-      const dt = new Date(c.committedAt || c.createdAt);
+      const commitDate = c.committedAt || c.createdAt;
+      if (!commitDate) continue;
+      const dt = new Date(commitDate);
       if (isNaN(dt.getTime())) continue;
       const day = dt.toISOString().slice(0, 10);
       dayCounts[day] = (dayCounts[day] || 0) + 1;
@@ -57,7 +98,9 @@ export class DigestsService {
     }
 
     const peakDay = Object.keys(dayCounts).length
-      ? Object.keys(dayCounts).reduce((a, b) => (dayCounts[a] > dayCounts[b] ? a : b))
+      ? Object.keys(dayCounts).reduce((a, b) =>
+          dayCounts[a] > dayCounts[b] ? a : b,
+        )
       : weekStart;
 
     const peakHour = (() => {
@@ -68,7 +111,9 @@ export class DigestsService {
     })();
 
     const prCount = prs.length;
-    const mergedCount = prs.filter((p: any) => p.mergedAt || p.state === 'merged').length;
+    const mergedCount = prs.filter(
+      (p: SyncPullRequest) => p.mergedAt || p.state === 'merged',
+    ).length;
 
     // language breakdown - try to infer from repositories
     const langCounts: Record<string, number> = {};
@@ -78,14 +123,17 @@ export class DigestsService {
       langCounts[lang] = (langCounts[lang] || 0) + 1;
     }
 
-    const languageBreakdown = Object.entries(langCounts).map(([k, v]) => `${k}: ${v}`).join(', ');
+    const languageBreakdown = Object.entries(langCounts)
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(', ');
 
     const streakData = await this.githubSyncService.getUserStreaks(userId);
 
-    const prompt = `You are DevPulse, an AI assistant for software developers.\nAnalyse this developer's GitHub activity from the past 7 days and write a friendly, insightful weekly digest in markdown format.\n\nDeveloper: ${data?.repositories?.[0]?.userId || userId}\nPeriod: ${weekStart} to ${weekEnd}\n\nStats:\n- Total commits: ${totalCommits}\n- Repositories worked on: ${repoList}\n- Most active day: ${peakDay}\n- Peak coding hour: ${peakHour}:00\n- Languages used: ${languageBreakdown}\n- Pull Requests opened: ${prCount}\n- PRs merged: ${mergedCount}\n- Longest commit streak this week: ${streakData?.longestStreak ?? 0} days\n- Total lines added: ${additions}, removed: ${deletions}\n\nWrite the digest in these sections:\n1. 🗓️ Week in Review (2-3 sentences, warm and personal)\n2. 💪 What You Crushed (highlight standout activity)\n3. 🔍 Patterns Noticed (e.g., \"You code best at 2PM\", \"Java dominated this week\")\n4. 🎯 Focus Suggestion for Next Week (one actionable tip)\n\nKeep tone: friendly, encouraging, like a senior dev who cares.\nKeep length: 250-300 words.`;
+    const prompt = `You are DevPulse, an AI assistant for software developers.\nAnalyse this developer's GitHub activity from the past 7 days and write a friendly, insightful weekly digest in markdown format.\n\nDeveloper: ${data?.repositories?.[0]?.userId || userId}\nPeriod: ${weekStart} to ${weekEnd}\n\nStats:\n- Total commits: ${totalCommits}\n- Repositories worked on: ${repoList}\n- Most active day: ${peakDay}\n- Peak coding hour: ${peakHour}:00\n- Languages used: ${languageBreakdown}\n- Pull Requests opened: ${prCount}\n- PRs merged: ${mergedCount}\n- Longest commit streak this week: ${streakData?.longestStreak ?? 0} days\n- Total lines added: ${additions}, removed: ${deletions}\n\nWrite the digest in these sections:\n1. 🗓️ Week in Review (2-3 sentences, warm and personal)\n2. 💪 What You Crushed (highlight standout activity)\n3. 🔍 Patterns Noticed (e.g., "You code best at 2PM", "Java dominated this week")\n4. 🎯 Focus Suggestion for Next Week (one actionable tip)\n\nKeep tone: friendly, encouraging, like a senior dev who cares.\nKeep length: 250-300 words.`;
 
     const aiResponse = await this.aiService.generateText(prompt);
-    const content = aiResponse?.trim() || `Weekly digest for ${weekStart} - ${weekEnd}`;
+    const content =
+      aiResponse?.trim() || `Weekly digest for ${weekStart} - ${weekEnd}`;
 
     const rawStats = {
       totalCommits,

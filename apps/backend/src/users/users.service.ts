@@ -94,13 +94,12 @@ export class UsersService {
       locale: user.locale,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      lastSyncedAt: (user as any).lastSyncedAt ?? null,
+      lastSyncedAt: user.lastSyncedAt ?? null,
       repositories: user.repositories?.length ?? 0,
       commits: user.commits?.length ?? 0,
       pullRequests: user.pullRequests?.length ?? 0,
     };
   }
-
 
   findByGithubId(githubId: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { githubId } });
@@ -128,7 +127,7 @@ export class UsersService {
   async updateLastSynced(userId: string, when: Date): Promise<User | null> {
     const user = await this.findById(userId);
     if (!user) return null;
-    (user as any).lastSyncedAt = when;
+    user.lastSyncedAt = when;
     return this.userRepository.save(user);
   }
 }

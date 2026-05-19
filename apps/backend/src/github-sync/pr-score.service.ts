@@ -35,9 +35,24 @@ Respond ONLY with valid JSON:
     try {
       const match = content.match(/\{[\s\S]*\}/);
       const jsonStr = match ? match[0] : content;
-      const obj = JSON.parse(jsonStr);
-      const score = Number(obj.score ?? obj.scoreValue ?? obj.pr_score ?? null);
-      const reason = typeof obj.reason === 'string' ? obj.reason : typeof obj.explanation === 'string' ? obj.explanation : null;
+      const obj = JSON.parse(jsonStr) as {
+        score?: unknown;
+        scoreValue?: unknown;
+        pr_score?: unknown;
+        reason?: unknown;
+        explanation?: unknown;
+      };
+      const scoreVal = obj.score ?? obj.scoreValue ?? obj.pr_score;
+      const score =
+        typeof scoreVal === 'number' || typeof scoreVal === 'string'
+          ? Number(scoreVal)
+          : NaN;
+      const reason =
+        typeof obj.reason === 'string'
+          ? obj.reason
+          : typeof obj.explanation === 'string'
+            ? obj.explanation
+            : null;
 
       if (!Number.isNaN(score)) {
         pr.prScore = Math.max(1, Math.min(10, score));

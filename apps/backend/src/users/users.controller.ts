@@ -1,4 +1,10 @@
-import { Controller, Get, NotFoundException, UseGuards, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  UseGuards,
+  Param,
+} from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { UsersService } from './users.service';

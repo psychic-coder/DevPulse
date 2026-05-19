@@ -70,7 +70,6 @@ export class GithubSyncService {
 
       const syncedAt = new Date();
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         await this.usersService.updateLastSynced(user.id, syncedAt);
       } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : String(e);

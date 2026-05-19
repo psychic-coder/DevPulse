@@ -3,7 +3,6 @@ import { DigestsService } from './digests.service';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
-
 @Controller('digests')
 @UseGuards(JwtAuthGuard)
 export class DigestsController {

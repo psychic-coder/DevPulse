@@ -21,7 +21,12 @@ import { AiService } from '../shared/ai.service';
     RealtimeModule,
   ],
   controllers: [GithubSyncController],
-  providers: [GithubSyncService, GithubSyncCronService, PrScoreService, AiService],
+  providers: [
+    GithubSyncService,
+    GithubSyncCronService,
+    PrScoreService,
+    AiService,
+  ],
   exports: [GithubSyncService],
 })
 export class GithubSyncModule {}
