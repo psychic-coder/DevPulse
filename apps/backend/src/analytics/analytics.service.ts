@@ -5,17 +5,23 @@ import { ConfigService } from '@nestjs/config';
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
   private analyticsUrl: string;
+  private allowInlineFallback: boolean;
 
   constructor(private configService: ConfigService) {
     this.analyticsUrl =
       this.configService.get<string>('ANALYTICS_SERVICE_URL') ||
       'http://localhost:5001';
+    this.allowInlineFallback =
+      String(
+        this.configService.get<string>('ANALYTICS_ALLOW_INLINE_FALLBACK') ||
+          'false',
+      ).toLowerCase() === 'true';
   }
 
   /**
    * Analyze commit patterns via Flask analytics service
    */
-  async analyzeCommits(commits: any[]): Promise<any> {
+  async analyzeCommits(commits: any[]): Promise<unknown> {
     try {
       if (!commits || commits.length === 0) {
         const frequencyByHour: Record<number, number> = {};
@@ -60,8 +66,7 @@ export class AnalyticsService {
         );
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const data = await response.json();
+      const data = (await response.json()) as unknown;
       return data;
     } catch (error) {
       this.logger.error(
@@ -77,7 +82,7 @@ export class AnalyticsService {
   /**
    * Analyze language distribution via Flask analytics service
    */
-  async analyzeLanguages(repositories: any[]): Promise<any> {
+  async analyzeLanguages(repositories: any[]): Promise<unknown> {
     try {
       if (!repositories || repositories.length === 0) {
         return {
@@ -110,8 +115,7 @@ export class AnalyticsService {
         );
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const data = await response.json();
+      const data = (await response.json()) as unknown;
       return data;
     } catch (error) {
       this.logger.error(
@@ -139,5 +143,10 @@ export class AnalyticsService {
       );
       return false;
     }
+  }
+
+  /** Should the controller fall back to inline computation when service is down? */
+  shouldAllowInlineFallback(): boolean {
+    return this.allowInlineFallback;
   }
 }

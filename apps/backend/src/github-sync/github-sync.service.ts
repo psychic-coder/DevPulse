@@ -68,13 +68,15 @@ export class GithubSyncService {
         `Synced user ${userId}: ${reposCount} repos, ${commitsCount} commits, ${prsCount} PRs`,
       );
 
-      // Emit sync complete event
-      // Persist last synced timestamp on the user record
       const syncedAt = new Date();
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         await this.usersService.updateLastSynced(user.id, syncedAt);
-      } catch (e) {
-        this.logger.warn('Failed to update lastSynced on user: ' + e.message);
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        this.logger.warn(
+          'Failed to update lastSynced on user: ' + errorMessage,
+        );
       }
 
       this.realtimeGateway.emitSyncComplete(userId, {
@@ -236,9 +238,11 @@ export class GithubSyncService {
           if (commits.length < perPage) break;
           page++;
         }
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.warn(
-          `Failed to sync commits for repo ${repo.fullName}: ${error.message}`,
+          `Failed to sync commits for repo ${repo.fullName}: ${errorMessage}`,
         );
       }
     }
@@ -316,9 +320,11 @@ export class GithubSyncService {
           if (!hasRecentPr || prs.length < perPage) break;
           page++;
         }
-      } catch (error) {
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         this.logger.warn(
-          `Failed to sync PRs for repo ${repo.fullName}: ${error.message}`,
+          `Failed to sync PRs for repo ${repo.fullName}: ${errorMessage}`,
         );
       }
     }
@@ -355,11 +361,15 @@ export class GithubSyncService {
 
       // async PR scoring
       try {
-        this.prScoreService?.scorePullRequest?.(existingPr).catch((e) =>
-          this.logger.warn('PR scoring failed: ' + e.message),
-        );
-      } catch (e) {
-        this.logger.warn('PR scoring invocation error: ' + e.message);
+        this.prScoreService
+          ?.scorePullRequest?.(existingPr)
+          .catch((e: unknown) => {
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            this.logger.warn('PR scoring failed: ' + errorMessage);
+          });
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        this.logger.warn('PR scoring invocation error: ' + errorMessage);
       }
     } else {
       const newPr = this.pullRequestRepo.create({
@@ -383,13 +393,10 @@ export class GithubSyncService {
       await this.pullRequestRepo.save(newPr);
 
       // async PR scoring for new PRs
-      try {
-        this.prScoreService?.scorePullRequest?.(newPr).catch((e) =>
-          this.logger.warn('PR scoring failed: ' + e.message),
-        );
-      } catch (e) {
-        this.logger.warn('PR scoring invocation error: ' + e.message);
-      }
+      this.prScoreService?.scorePullRequest?.(newPr).catch((e: unknown) => {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        this.logger.warn('PR scoring failed: ' + errorMessage);
+      });
 
       // Emit new PR event in real-time
       if (this.realtimeGateway.hasActiveConnections(userId)) {
@@ -479,7 +486,9 @@ export class GithubSyncService {
     // Current streak ending today (UTC)
     let currentStreak = 0;
     const today = new Date();
-    const check = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+    const check = new Date(
+      Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+    );
     while (true) {
       const key = check.toISOString().slice(0, 10);
       if (dateSet.has(key)) {

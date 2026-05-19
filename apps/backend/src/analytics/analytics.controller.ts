@@ -58,24 +58,37 @@ export class AnalyticsController {
     }));
 
     // Try to use the analytics microservice; fall back to inline computation
-    let commitAnalytics: any;
-    let languageAnalytics: any;
+    let commitAnalytics: unknown;
+    let languageAnalytics: unknown;
 
     try {
       const healthy = await this.analyticsService.healthCheck();
       if (healthy) {
-        [commitAnalytics, languageAnalytics] = await Promise.all([
+        const results = await Promise.all([
           this.analyticsService.analyzeCommits(formattedCommits),
           this.analyticsService.analyzeLanguages(formattedRepos),
         ]);
+        commitAnalytics = results[0];
+        languageAnalytics = results[1];
       } else {
         throw new Error('unhealthy');
       }
-    } catch {
-      // Compute inline from DB data (Flask not available)
-      this.logger.warn('Analytics microservice unavailable – computing inline');
-      commitAnalytics = this.computeInlineCommitAnalytics(commits);
-      languageAnalytics = this.computeInlineLanguageAnalytics(repositories);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      this.logger.warn('Analytics microservice unavailable: ' + errorMessage);
+
+      // If the analytics service is configured to allow inline fallback use it,
+      // otherwise return 503 so the caller knows the dedicated service is down.
+      if (this.analyticsService.shouldAllowInlineFallback()) {
+        this.logger.warn('Falling back to inline analytics computation');
+        commitAnalytics = this.computeInlineCommitAnalytics(commits);
+        languageAnalytics = this.computeInlineLanguageAnalytics(repositories);
+      } else {
+        throw new HttpException(
+          'Analytics microservice is unavailable',
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
     }
 
     return {
@@ -91,10 +104,18 @@ export class AnalyticsController {
   }
 
   /** Compute commit frequency analytics directly from DB records */
-  private computeInlineCommitAnalytics(commits: any[]) {
+  private computeInlineCommitAnalytics(commits: Commit[]) {
     const byHour: Record<number, number> = {};
     const byDay: Record<string, number> = {};
-    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const DAYS = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
     let totalAdditions = 0;
     let totalDeletions = 0;
 
@@ -116,7 +137,8 @@ export class AnalyticsController {
     return {
       peak_hour: peakHourEntry ? Number(peakHourEntry[0]) : 0,
       peak_day: peakDayEntry ? peakDayEntry[0] : 'Monday',
-      avg_daily_commits: commits.length > 0 ? Math.round((commits.length / 90) * 10) / 10 : 0,
+      avg_daily_commits:
+        commits.length > 0 ? Math.round((commits.length / 90) * 10) / 10 : 0,
       longest_streak_days: 0,
       current_streak_days: 0,
       total_additions: totalAdditions,
@@ -127,7 +149,7 @@ export class AnalyticsController {
   }
 
   /** Compute language distribution directly from DB records */
-  private computeInlineLanguageAnalytics(repositories: any[]) {
+  private computeInlineLanguageAnalytics(repositories: Repository[]) {
     const dist: Record<string, number> = {};
     for (const r of repositories) {
       const lang = r.language || 'Unknown';
@@ -137,11 +159,19 @@ export class AnalyticsController {
     const topLanguages = Object.entries(dist)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
-      .map(([name, count]) => ({ name, percentage: Math.round((count / total) * 100) }));
+      .map(([name, count]) => ({
+        name,
+        percentage: Math.round((count / total) * 100),
+      }));
     const primary = topLanguages[0]?.name ?? null;
     return {
       distribution: dist,
-      stats: Object.fromEntries(Object.entries(dist).map(([k, v]) => [k, { percentage: Math.round((v / total) * 100) }])),
+      stats: Object.fromEntries(
+        Object.entries(dist).map(([k, v]) => [
+          k,
+          { percentage: Math.round((v / total) * 100) },
+        ]),
+      ),
       top_languages: topLanguages,
       diversity: {
         total_languages: Object.keys(dist).length,
