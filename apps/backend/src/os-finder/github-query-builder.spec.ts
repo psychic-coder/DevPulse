@@ -90,14 +90,14 @@ describe('GitHubQueryBuilder', () => {
   it('12. should handle single domain mapped to topics', () => {
     const filters = { ...baseFilters, domains: ['devtools' as const] };
     const query = GitHubQueryBuilder.build(filters);
-    expect(query).toContain('(topic:cli OR topic:developer-tools OR topic:devtools OR topic:terminal)');
+    expect(query).toContain('(cli OR developer-tools OR devtools OR terminal)');
   });
 
   it('13. should handle multiple domains mapped to topics', () => {
     const filters = { ...baseFilters, domains: ['devtools' as const, 'ai_ml' as const] };
     const query = GitHubQueryBuilder.build(filters);
-    expect(query).toContain('topic:cli');
-    expect(query).toContain('topic:machine-learning');
+    expect(query).toContain('cli');
+    expect(query).toContain('machine-learning');
   });
 
   it('14. should append single license filter', () => {
@@ -109,7 +109,7 @@ describe('GitHubQueryBuilder', () => {
   it('15. should append multiple license filters grouped with OR', () => {
     const filters = { ...baseFilters, licenseTypes: ['MIT', 'Apache-2.0'] };
     const query = GitHubQueryBuilder.build(filters);
-    expect(query).toContain('(license:mit OR license:apache-2.0)');
+    expect(query).toContain('(mit OR apache-2.0)');
   });
 
   it('16. should prepend keywords to query', () => {
@@ -131,7 +131,7 @@ describe('GitHubQueryBuilder', () => {
     expect(query).toContain('language:typescript');
     expect(query).toContain('good-first-issues:>0');
     expect(query).toContain('stars:1..999');
-    expect(query).toContain('topic:web');
+    expect(query).toContain('web');
     expect(query).toContain('license:mit');
   });
 });

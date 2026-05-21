@@ -71,6 +71,72 @@ export class OsFinderService {
     return response.json();
   }
 
+  private async fetchGithubWithLanguages(
+    filters: OsFinderFilters,
+    userCtx: any,
+    keywords?: string[]
+  ): Promise<{ items: any[]; total_count: number }> {
+    const langs = filters.languages && filters.languages.length > 0
+      ? filters.languages
+      : [];
+
+    if (langs.length === 0) {
+      const query = GitHubQueryBuilder.build({ ...filters, languages: [] }, userCtx, keywords);
+      const res = await this.fetchGithub(
+        `${this.GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(query)}&sort=updated&per_page=30`,
+        userCtx.githubToken
+      );
+      return {
+        items: res?.items || [],
+        total_count: res?.total_count || 0
+      };
+    }
+
+    const targetLangs = langs.slice(0, 3);
+    const promises = targetLangs.map(async (lang) => {
+      const query = GitHubQueryBuilder.build({ ...filters, languages: [lang] }, userCtx, keywords);
+      try {
+        const res = await this.fetchGithub(
+          `${this.GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(query)}&sort=updated&per_page=30`,
+          userCtx.githubToken
+        );
+        return {
+          items: res?.items || [],
+          total_count: res?.total_count || 0
+        };
+      } catch (err) {
+        if (err instanceof GithubRateLimitError) {
+          throw err;
+        }
+        this.logger.error(`Failed github search API query for language ${lang}: ${err instanceof Error ? err.message : String(err)}`);
+        return { items: [], total_count: 0 };
+      }
+    });
+
+    const results = await Promise.all(promises);
+
+    const seenIds = new Set<number>();
+    const mergedItems: any[] = [];
+    let totalCount = 0;
+
+    for (const res of results) {
+      if (res && res.items) {
+        totalCount += res.total_count || 0;
+        for (const item of res.items) {
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            mergedItems.push(item);
+          }
+        }
+      }
+    }
+
+    return {
+      items: mergedItems.slice(0, 30),
+      total_count: totalCount,
+    };
+  }
+
   // Step 2: Load user context (languages + avg PR score + inferred difficulty)
   async loadUserContext(userId: string): Promise<{
     topLanguages: string[];
@@ -177,10 +243,7 @@ export class OsFinderService {
     ];
 
     try {
-      rawResults = await this.fetchGithub(
-        `${this.GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(githubQuery)}&sort=updated&per_page=30`,
-        userCtx.githubToken
-      );
+      rawResults = await this.fetchGithubWithLanguages(activeFilters, userCtx);
 
       // Loop relaxation
       if ((!rawResults || rawResults.total_count < 3) && rawResults.items) {
@@ -194,11 +257,7 @@ export class OsFinderService {
             (filtersRelaxed as any)[field] = step.to;
             notes.push(step.message);
 
-            githubQuery = GitHubQueryBuilder.build(activeFilters, userCtx);
-            const retryRes = await this.fetchGithub(
-              `${this.GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(githubQuery)}&sort=updated&per_page=30`,
-              userCtx.githubToken
-            );
+            const retryRes = await this.fetchGithubWithLanguages(activeFilters, userCtx);
 
             if (retryRes && retryRes.total_count >= 3) {
               rawResults = retryRes;
@@ -321,11 +380,11 @@ export class OsFinderService {
     let relaxationNote: string | null = fallbackUsed ? "AI query builder unavailable. Using keyword matching instead." : null;
 
     try {
-      rawResults = await this.fetchGithub(
-        `${this.GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(githubQuery)}&sort=updated&per_page=30`,
-        userCtx.githubToken
-      );
+      rawResults = await this.fetchGithubWithLanguages(activeFilters, userCtx, keywords);
     } catch (err) {
+      if (err instanceof GithubRateLimitError) {
+        throw err;
+      }
       this.logger.error(`Failed github search AI query: ${err instanceof Error ? err.message : String(err)}`);
       rawResults = { items: [], total_count: 0 };
     }

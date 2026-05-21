@@ -33,6 +33,8 @@ Return this exact JSON structure:
   "repoSize": "small" | "medium" | "large" | "any",
   "lastCommitDays": number,
   "hasContributing": boolean,
+  "hasCodeOfConduct": boolean,
+  "licenseTypes": string[],
   "keywords": string[]
 }
 
@@ -40,6 +42,8 @@ Rules:
 - If user doesn't mention language, use their top language from profile
 - If user says 'nothing too complex' or 'beginner-friendly', set difficulty: beginner
 - If user says 'active community', set lastCommitDays: 30
+- For licenses mentioned (e.g. 'mit', 'apache'), populate the "licenseTypes" array (e.g. ["MIT"]) rather than putting it in keywords.
+- Keep the keywords array extremely minimal (0 to 2 items max). Only extract high-value specific search terms that are NOT already captured by languages, domains, or license types. Never include common stop words, or words like "application", "tool", "license", "library", "framework", "repo", "project".
 - Never invent filters not in the schema above
 - Only respond with JSON — no preamble, no markdown backticks`;
 
@@ -95,8 +99,8 @@ Rules:
         minOpenIssues: 3,
         issueFreshDays: 60,
         hasContributing: typeof parsed.hasContributing === 'boolean' ? parsed.hasContributing : true,
-        hasCodeOfConduct: false,
-        licenseTypes: [],
+        hasCodeOfConduct: typeof parsed.hasCodeOfConduct === 'boolean' ? parsed.hasCodeOfConduct : false,
+        licenseTypes: Array.isArray(parsed.licenseTypes) ? parsed.licenseTypes : [],
         prMergeRate: 30,
       };
 

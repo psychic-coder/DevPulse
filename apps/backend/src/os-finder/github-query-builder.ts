@@ -77,22 +77,21 @@ export class GitHubQueryBuilder {
       });
 
       if (topics.length > 0) {
-        const topicQueries = topics.map(t => `topic:${t}`);
-        if (topicQueries.length === 1) {
-          parts.push(topicQueries[0]);
+        if (topics.length === 1) {
+          parts.push(`topic:${topics[0]}`);
         } else {
-          parts.push(`(${topicQueries.join(' OR ')})`);
+          parts.push(`(${topics.join(' OR ')})`);
         }
       }
     }
 
     // 7. License types
     if (filters.licenseTypes && filters.licenseTypes.length > 0) {
-      const licenseQueries = filters.licenseTypes.map(lic => `license:${lic.toLowerCase()}`);
-      if (licenseQueries.length === 1) {
-        parts.push(licenseQueries[0]);
+      const licenses = filters.licenseTypes.map(lic => lic.toLowerCase());
+      if (licenses.length === 1) {
+        parts.push(`license:${licenses[0]}`);
       } else {
-        parts.push(`(${licenseQueries.join(' OR ')})`);
+        parts.push(`(${licenses.join(' OR ')})`);
       }
     }
 
