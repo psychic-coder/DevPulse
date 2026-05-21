@@ -19,7 +19,7 @@ import {
   NCFScoreBreakdown,
   RepoHealthFlags,
   SavedRepoStatus
-} from '../../../../packages/shared-types/os-finder.types';
+} from '../../packages/shared-types/os-finder.types';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SaveRepoDto } from './dto/save-repo.dto';
 import { UpdateSavedRepoDto } from './dto/update-saved-repo.dto';

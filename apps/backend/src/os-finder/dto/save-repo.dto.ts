@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsNumber, IsString, IsOptional, IsBoolean, IsEnum } from 'class-validator';
-import type { SavedRepoStatus } from '../../../../../packages/shared-types/os-finder.types';
+import type { SavedRepoStatus } from '../../../packages/shared-types/os-finder.types';
 
 export class SaveRepoDto {
   @IsNotEmpty()

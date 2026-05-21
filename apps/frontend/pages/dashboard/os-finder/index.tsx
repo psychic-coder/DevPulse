@@ -11,7 +11,7 @@ import type {
   OsFinderFilters,
   OsFinderRepoResult,
   OsFinderSearchResponse,
-} from "../../../../../packages/shared-types/os-finder.types";
+} from "../../../../backend/packages/shared-types/os-finder.types";
 
 const POPULAR_LANGUAGES = [
   "TypeScript", "JavaScript", "Python", "Go", "Rust", "Ruby", "C++", "Java", "HTML", "CSS"

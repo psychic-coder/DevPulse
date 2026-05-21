@@ -1,4 +1,4 @@
-import { OsFinderFilters } from '../../../../packages/shared-types/os-finder.types';
+import { OsFinderFilters } from '../../packages/shared-types/os-finder.types';
 
 export class GitHubQueryBuilder {
   static build(

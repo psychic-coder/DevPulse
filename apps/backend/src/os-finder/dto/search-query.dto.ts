@@ -1,6 +1,6 @@
 import { IsOptional, IsString, IsEnum, IsNumber, IsBoolean, IsArray, IsInt, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
-import type { Difficulty, ContributionType, Domain, RepoSize, LanguageMode } from '../../../../../packages/shared-types/os-finder.types';
+import type { Difficulty, ContributionType, Domain, RepoSize, LanguageMode } from '../../../packages/shared-types/os-finder.types';
 
 export class SearchQueryDto {
   @IsOptional()

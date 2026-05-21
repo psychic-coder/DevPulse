@@ -1,5 +1,5 @@
 import { GitHubQueryBuilder } from './github-query-builder';
-import { OsFinderFilters } from '../../../../packages/shared-types/os-finder.types';
+import { OsFinderFilters } from '../../packages/shared-types/os-finder.types';
 
 describe('GitHubQueryBuilder', () => {
   const baseFilters: OsFinderFilters = {

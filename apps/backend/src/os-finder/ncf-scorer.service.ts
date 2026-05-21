@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OsFinderCacheService } from './os-finder-cache.service';
-import { NCFScoreBreakdown } from '../../../../packages/shared-types/os-finder.types';
+import { NCFScoreBreakdown } from '../../packages/shared-types/os-finder.types';
 import { GithubRateLimitError } from './repo-health.service';
 
 @Injectable()

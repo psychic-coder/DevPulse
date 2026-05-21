@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OsFinderCacheService } from './os-finder-cache.service';
-import { RepoHealthFlags } from '../../../../packages/shared-types/os-finder.types';
+import { RepoHealthFlags } from '../../packages/shared-types/os-finder.types';
 
 export class GithubRateLimitError extends Error {
   constructor(public readonly resetTime: number) {

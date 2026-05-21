@@ -6,7 +6,6 @@ COPY apps/backend/package*.json ./
 RUN npm ci
 
 COPY apps/backend/ .
-COPY packages/ /packages/
 RUN npm run build
 
 FROM node:20-alpine AS runner
@@ -22,4 +21,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3000
 ENV PORT=3000
 
-CMD ["node", "dist/app/src/main.js"]
+CMD ["node", "dist/src/main.js"]

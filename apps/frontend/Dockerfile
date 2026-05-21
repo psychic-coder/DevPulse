@@ -6,7 +6,7 @@ COPY apps/frontend/package*.json ./
 RUN npm ci --legacy-peer-deps
 
 COPY apps/frontend/ .
-COPY packages/ /packages/
+COPY apps/backend/packages/ /backend/packages/
 ARG BACKEND_URL
 ARG NEXT_PUBLIC_BACKEND_URL
 ENV BACKEND_URL=${BACKEND_URL}
