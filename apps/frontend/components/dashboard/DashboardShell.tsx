@@ -3,13 +3,14 @@ import { motion } from "framer-motion";
 import { ReactNode } from "react";
 import { Navbar } from "../Navbar";
 
-type RouteKey = "dashboard" | "commits" | "prs" | "digest" | "settings";
+type RouteKey = "dashboard" | "commits" | "prs" | "digest" | "settings" | "os-finder";
 
 const tabs: Array<{ key: RouteKey; label: string; href: string }> = [
   { key: "dashboard", label: "Overview", href: "/dashboard" },
   { key: "commits", label: "Commits", href: "/dashboard/commits" },
   { key: "prs", label: "PRs", href: "/dashboard/prs" },
   { key: "digest", label: "Digest", href: "/dashboard/digest" },
+  { key: "os-finder", label: "OS Finder", href: "/dashboard/os-finder" },
   { key: "settings", label: "Settings", href: "/dashboard/settings" },
 ];
 

@@ -17,6 +17,7 @@ import { DigestsModule } from './digests/digests.module';
 import { CacheModule } from './common/cache/cache.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { OsFinderModule } from './os-finder/os-finder.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     DigestsModule,
     AnalyticsModule,
     RealtimeModule,
+    OsFinderModule,
   ],
   controllers: [AppController],
   providers: [
