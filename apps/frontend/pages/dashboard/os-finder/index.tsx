@@ -385,10 +385,10 @@ export default function OsFinderSearchPage() {
                     <select
                       value={languageMode}
                       onChange={(e: any) => setLanguageMode(e.target.value)}
-                      className="bg-void text-xs border border-dim rounded px-1.5 py-0.5 text-secondary focus:outline-none"
+                      className="bg-void text-xs border border-dim rounded px-1.5 py-0.5 text-primary focus:outline-none cursor-pointer"
                     >
-                      <option value="any_of">Match Any</option>
-                      <option value="strict">Match All</option>
+                      <option value="any_of" className="bg-surface text-primary">Match Any</option>
+                      <option value="strict" className="bg-surface text-primary">Match All</option>
                     </select>
                   </div>
                   <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
@@ -399,11 +399,10 @@ export default function OsFinderSearchPage() {
                           key={lang}
                           type="button"
                           onClick={() => handleLanguageToggle(lang.toLowerCase())}
-                          className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
-                            selected
+                          className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all ${selected
                               ? "bg-blue-950/40 text-blue-300 border-blue-800/80"
                               : "bg-void text-secondary border-dim hover:border-mid"
-                          }`}
+                            }`}
                         >
                           {lang}
                         </button>
@@ -421,9 +420,8 @@ export default function OsFinderSearchPage() {
                         key={lvl}
                         type="button"
                         onClick={() => setDifficulty(lvl)}
-                        className={`capitalize py-1.5 text-xs font-medium rounded-lg transition-all ${
-                          difficulty === lvl ? "bg-hover text-white shadow-xs" : "text-dim"
-                        }`}
+                        className={`capitalize py-1.5 text-xs font-medium rounded-lg transition-all ${difficulty === lvl ? "bg-hover text-white shadow-xs" : "text-dim"
+                          }`}
                       >
                         {lvl}
                       </button>
@@ -440,9 +438,8 @@ export default function OsFinderSearchPage() {
                         key={size}
                         type="button"
                         onClick={() => setRepoSize(size)}
-                        className={`capitalize py-1 text-[10px] font-medium rounded-md transition-all ${
-                          repoSize === size ? "bg-hover text-white shadow-xs" : "text-dim"
-                        }`}
+                        className={`capitalize py-1 text-[10px] font-medium rounded-md transition-all ${repoSize === size ? "bg-hover text-white shadow-xs" : "text-dim"
+                          }`}
                       >
                         {size}
                       </button>
@@ -461,11 +458,10 @@ export default function OsFinderSearchPage() {
                           key={dom.value}
                           type="button"
                           onClick={() => handleDomainToggle(dom.value)}
-                          className={`text-left text-xs p-2 rounded-xl border transition-all ${
-                            selected
+                          className={`text-left text-xs p-2 rounded-xl border transition-all ${selected
                               ? "bg-purple-950/40 text-purple-300 border-purple-800/80"
                               : "bg-void text-secondary border-dim hover:border-mid"
-                          }`}
+                            }`}
                         >
                           {dom.label}
                         </button>
@@ -725,11 +721,10 @@ export default function OsFinderSearchPage() {
                           <button
                             onClick={() => toggleWatchlist(repo)}
                             disabled={savingId === repo.githubRepoId}
-                            className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1 justify-center ${
-                              repo.isSaved
+                            className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1 justify-center ${repo.isSaved
                                 ? "bg-amber-950/20 text-amber-300 border-amber-900/50 hover:bg-amber-900/30"
                                 : "bg-hover text-secondary border-dim hover:text-white"
-                            }`}
+                              }`}
                           >
                             <svg className="h-4 w-4" fill={repo.isSaved ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
