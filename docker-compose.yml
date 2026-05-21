@@ -18,7 +18,9 @@ services:
       - "6379:6379"
 
   backend:
-    build: ./apps/backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
@@ -39,7 +41,8 @@ services:
 
   frontend:
     build:
-      context: ./apps/frontend
+      context: .
+      dockerfile: apps/frontend/Dockerfile
       args:
         - BACKEND_URL=http://backend:3000
         - NEXT_PUBLIC_BACKEND_URL=http://localhost:3000

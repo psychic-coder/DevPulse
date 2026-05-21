@@ -36,6 +36,10 @@ const nextConfig = {
         source: '/digests/:path*',
         destination: `${backendUrl}/digests/:path*`,
       },
+      {
+        source: '/os-finder/:path*',
+        destination: `${backendUrl}/os-finder/:path*`,
+      },
     ];
   },
 };

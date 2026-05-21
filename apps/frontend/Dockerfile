@@ -2,10 +2,11 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY apps/frontend/package*.json ./
 RUN npm ci --legacy-peer-deps
 
-COPY . .
+COPY apps/frontend/ .
+COPY packages/ /packages/
 ARG BACKEND_URL
 ARG NEXT_PUBLIC_BACKEND_URL
 ENV BACKEND_URL=${BACKEND_URL}
