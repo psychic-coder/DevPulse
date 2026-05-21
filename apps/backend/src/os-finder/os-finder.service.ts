@@ -691,7 +691,7 @@ export class OsFinderService {
         stars: dto.stars || 0,
         forks: dto.forks || 0,
         openIssues: dto.openIssues || 0,
-        ncfScore: dto.ncfScore || null,
+        ncfScore: dto.ncfScore && typeof dto.ncfScore === 'object' ? dto.ncfScore : null,
         langMatchScore: dto.langMatchScore || null,
         lastCommitAt: dto.lastCommitAt ? new Date(dto.lastCommitAt) : null,
         hasContributing: dto.hasContributing || false,

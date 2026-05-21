@@ -39,8 +39,7 @@ export class SaveRepoDto {
   openIssues?: number;
 
   @IsOptional()
-  @IsNumber()
-  ncfScore?: number | null;
+  ncfScore?: any;
 
   @IsOptional()
   @IsNumber()

@@ -51,8 +51,8 @@ export class SavedRepo {
   @Column({ name: 'open_issues', type: 'int', default: 0 })
   openIssues: number;
 
-  @Column({ name: 'ncf_score', type: 'double precision', nullable: true })
-  ncfScore: number | null;
+  @Column({ name: 'ncf_score', type: 'jsonb', nullable: true })
+  ncfScore: any | null;
 
   @Column({ name: 'lang_match_score', type: 'double precision', nullable: true })
   langMatchScore: number | null;
