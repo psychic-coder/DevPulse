@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: devpulse
       POSTGRES_PASSWORD: devpulse
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -38,7 +38,11 @@ services:
       - "5001:5001"
 
   frontend:
-    build: ./apps/frontend
+    build:
+      context: ./apps/frontend
+      args:
+        - BACKEND_URL=http://backend:3000
+        - NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
     ports:
       - "3001:3001"
     depends_on:
