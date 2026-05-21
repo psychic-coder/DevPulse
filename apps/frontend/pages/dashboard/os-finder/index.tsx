@@ -115,7 +115,7 @@ export default function OsFinderSearchPage() {
     try {
       let res;
       if (aiMode && !customFilters) {
-        res = await fetchWithAuth("/os-finder/search/ai", {
+        res = await fetchWithAuth("/api/os-finder-ai-search", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query: aiQuery }),

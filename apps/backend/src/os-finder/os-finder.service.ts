@@ -474,9 +474,9 @@ export class OsFinderService {
         await Promise.race(activePromises);
       }
 
-      // Stagger start: 200ms wait
+      // Stagger start: 50ms wait (prevents burst rate limiting while keeping total time short)
       if (i > 0) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       const promise = (async () => {

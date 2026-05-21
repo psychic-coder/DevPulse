@@ -47,7 +47,7 @@ Rules:
 - Never invent filters not in the schema above
 - Only respond with JSON — no preamble, no markdown backticks`;
 
-    const timeoutMs = 5000;
+    const timeoutMs = 15000;
     let aiResponse: string | null = null;
     let fallbackUsed = false;
 

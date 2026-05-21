@@ -37,7 +37,8 @@ const nextConfig = {
         destination: `${backendUrl}/digests/:path*`,
       },
       {
-        source: '/os-finder/:path*',
+        // All os-finder routes EXCEPT /search/ai (that goes to the custom API route)
+        source: '/os-finder/:path((?!search/ai$).*)',
         destination: `${backendUrl}/os-finder/:path*`,
       },
     ];

@@ -64,7 +64,6 @@ export class AiService {
         body: JSON.stringify({
           model,
           messages,
-          reasoning: { enabled: process.env.OPENROUTER_REASONING !== 'false' },
           max_tokens: 800,
         }),
       });
