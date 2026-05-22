@@ -46,7 +46,7 @@ describe('NcfScorerService', () => {
 
     // Mock global fetch
     jest.spyOn(global, 'fetch').mockImplementation((url: RequestInfo | URL) => {
-      const urlStr = url.toString();
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
       let data: unknown = {};
       if (urlStr.includes('/issues?labels=good first issue')) {
         data = [{ id: 1, updated_at: freshDate.toISOString() }];
@@ -109,7 +109,7 @@ describe('NcfScorerService', () => {
     oldDate.setDate(oldDate.getDate() - 100);
 
     jest.spyOn(global, 'fetch').mockImplementation((url: RequestInfo | URL) => {
-      const urlStr = url.toString();
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
       let data: unknown = {};
       if (urlStr.includes('/issues?labels=good first issue')) {
         data = [];
