@@ -4,7 +4,7 @@ import { OsFinderCacheService } from './os-finder-cache.service';
 
 describe('NcfScorerService', () => {
   let service: NcfScorerService;
-  let cacheService: OsFinderCacheService;
+  let _cacheService: OsFinderCacheService;
 
   const mockCacheService = {
     getRepoIssues: jest.fn(),
@@ -22,13 +22,14 @@ describe('NcfScorerService', () => {
     }).compile();
 
     service = module.get<NcfScorerService>(NcfScorerService);
-    cacheService = module.get<OsFinderCacheService>(OsFinderCacheService);
+    _cacheService = module.get<OsFinderCacheService>(OsFinderCacheService);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-    if ((global.fetch as any).mockRestore) {
-      (global.fetch as any).mockRestore();
+    const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>;
+    if (fetchMock.mockRestore) {
+      fetchMock.mockRestore();
     }
   });
 
@@ -44,29 +45,30 @@ describe('NcfScorerService', () => {
     freshDate.setDate(freshDate.getDate() - 5);
 
     // Mock global fetch
-    const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation((url: any) => {
-      let data: any = {};
-      if (url.includes('/issues?labels=good first issue')) {
+    jest.spyOn(global, 'fetch').mockImplementation((url: RequestInfo | URL) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
+      let data: unknown = {};
+      if (urlStr.includes('/issues?labels=good first issue')) {
         data = [{ id: 1, updated_at: freshDate.toISOString() }];
-      } else if (url.includes('/issues?labels=help wanted')) {
+      } else if (urlStr.includes('/issues?labels=help wanted')) {
         data = [{ id: 2 }];
-      } else if (url.includes('/community/profile')) {
+      } else if (urlStr.includes('/community/profile')) {
         data = {
           files: {
             contributing: { html_url: 'contrib' },
             code_of_conduct: { html_url: 'coc' },
           },
         };
-      } else if (url.includes('/readme')) {
+      } else if (urlStr.includes('/readme')) {
         data = { size: 5000 };
-      } else if (url.includes('/pulls')) {
+      } else if (urlStr.includes('/pulls')) {
         data = [
           {
             merged_at: freshDate.toISOString(),
             author_association: 'FIRST_TIME_CONTRIBUTOR',
           },
         ];
-      } else if (url.includes('/issues?state=closed')) {
+      } else if (urlStr.includes('/issues?state=closed')) {
         data = [
           {
             created_at: freshDate.toISOString(),
@@ -83,7 +85,7 @@ describe('NcfScorerService', () => {
           ['X-RateLimit-Reset', '1234567'],
         ]),
         json: () => Promise.resolve(data),
-      } as any);
+      } as unknown as Response);
     });
 
     const breakdown = await service.computeNCFScore('owner', 'repo', 'token', {});
@@ -106,24 +108,25 @@ describe('NcfScorerService', () => {
     const oldDate = new Date();
     oldDate.setDate(oldDate.getDate() - 100);
 
-    const fetchSpy = jest.spyOn(global, 'fetch').mockImplementation((url: any) => {
-      let data: any = {};
-      if (url.includes('/issues?labels=good first issue')) {
+    jest.spyOn(global, 'fetch').mockImplementation((url: RequestInfo | URL) => {
+      const urlStr = typeof url === 'string' ? url : url instanceof URL ? url.href : url.url;
+      let data: unknown = {};
+      if (urlStr.includes('/issues?labels=good first issue')) {
         data = [];
-      } else if (url.includes('/issues?labels=help wanted')) {
+      } else if (urlStr.includes('/issues?labels=help wanted')) {
         data = [];
-      } else if (url.includes('/community/profile')) {
+      } else if (urlStr.includes('/community/profile')) {
         data = {
           files: {
             contributing: null,
             code_of_conduct: null,
           },
         };
-      } else if (url.includes('/readme')) {
+      } else if (urlStr.includes('/readme')) {
         data = { size: 100 };
-      } else if (url.includes('/pulls')) {
+      } else if (urlStr.includes('/pulls')) {
         data = [];
-      } else if (url.includes('/issues?state=closed')) {
+      } else if (urlStr.includes('/issues?state=closed')) {
         // slow close time: 40 days
         const start = new Date();
         start.setDate(start.getDate() - 50);
@@ -145,7 +148,7 @@ describe('NcfScorerService', () => {
           ['X-RateLimit-Reset', '1234567'],
         ]),
         json: () => Promise.resolve(data),
-      } as any);
+      } as unknown as Response);
     });
 
     const breakdown = await service.computeNCFScore('owner', 'repo', 'token', {});

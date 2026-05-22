@@ -14,7 +14,6 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { User } from '../users/entities/user.entity';
 import { OsFinderService } from './os-finder.service';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SaveRepoDto } from './dto/save-repo.dto';

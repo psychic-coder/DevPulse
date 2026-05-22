@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AiService } from '../shared/ai.service';
-import { OsFinderFilters, Difficulty, ContributionType, Domain, RepoSize } from '../../packages/shared-types/os-finder.types';
+import { OsFinderFilters, Difficulty, ContributionType, Domain } from '../../packages/shared-types/os-finder.types';
 
 @Injectable()
 export class AiQueryBuilderService {

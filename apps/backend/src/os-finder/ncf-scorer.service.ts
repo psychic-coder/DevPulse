@@ -45,7 +45,7 @@ export class NcfScorerService {
     owner: string,
     repo: string,
     token: string,
-    repoDetails: any
+    _repoDetails: any
   ): Promise<NCFScoreBreakdown> {
     const breakdown: NCFScoreBreakdown = {
       total: 1.0, // base score
