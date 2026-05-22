@@ -16,9 +16,6 @@ import {
   OsFinderFilters,
   OsFinderRepoResult,
   OsFinderSearchResponse,
-  NCFScoreBreakdown,
-  RepoHealthFlags,
-  SavedRepoStatus
 } from '../../packages/shared-types/os-finder.types';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SaveRepoDto } from './dto/save-repo.dto';
@@ -376,7 +373,6 @@ export class OsFinderService {
     let activeFilters = { ...filters };
     let githubQuery = GitHubQueryBuilder.build(activeFilters, userCtx, keywords);
     let rawResults: any = null;
-    let filtersRelaxed: Partial<OsFinderFilters> | null = null;
     let relaxationNote: string | null = fallbackUsed ? "AI query builder unavailable. Using keyword matching instead." : null;
 
     try {
