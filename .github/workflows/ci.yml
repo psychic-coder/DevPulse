@@ -114,7 +114,7 @@ jobs:
       - name: Build Frontend Image
         uses: docker/build-push-action@v5
         with:
-          context: ./apps/frontend
+          context: .
           file: ./apps/frontend/Dockerfile
           push: false
           tags: devpulse-frontend:latest
